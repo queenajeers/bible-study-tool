@@ -3,9 +3,9 @@ import ReadHeader from "../components/ReadHeader";
 import BibleChapter from "../components/BibleChapter";
 
 export const BibleView = () => {
-  const [book, setBook] = useState("Genesis");
+  const [book, setBook] = useState("GEN");
   const [chapter, setChapter] = useState(1);
-  const [version, setVersion] = useState("NLT");
+  const [version, setVersion] = useState("BSB");
 
   return (
     <>
@@ -17,7 +17,7 @@ export const BibleView = () => {
         }}
       />
       <div className="flex items-center justify-center">
-        <BibleChapter />
+        <BibleChapter book={book} chapter={chapter} version={version} />
       </div>
     </>
   );

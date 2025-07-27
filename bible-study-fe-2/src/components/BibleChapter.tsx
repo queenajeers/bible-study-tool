@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
-import type { ChapterData, VerseContentItem } from "../Types/BibleChapterTypes";
+import type {
+  ChapterData,
+  VerseContentItem,
+} from "../Types/bible-chapter-types";
 
-const BibleChapter = () => {
+type BibleChapterProps = {
+  book: string;
+  chapter: number;
+  version: string;
+};
+
+const BibleChapter = (props: BibleChapterProps) => {
   const [chapterData, setChapterData] = useState<ChapterData>(
     {} as ChapterData
   );
   const [loading, setLoading] = useState(true);
-  const translationId = "BSB";
-  const bookId = "GEN";
-  const chapterNumber = 1;
 
   useEffect(() => {
+    console.log(
+      `https://bible.helloao.org/api/${props.version}/${props.book}/${props.chapter}.json`
+    );
     fetch(
-      `https://bible.helloao.org/api/${translationId}/${bookId}/${chapterNumber}.json`
+      `https://bible.helloao.org/api/${props.version}/${props.book}/${props.chapter}.json`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -23,7 +32,7 @@ const BibleChapter = () => {
         console.error("Failed to fetch Bible chapter:", error);
         setLoading(false);
       });
-  }, []);
+  }, [props]);
 
   const renderVerseContent = (contentArray: VerseContentItem[]) =>
     contentArray.map((item, index) => {

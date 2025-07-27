@@ -28,7 +28,7 @@ const BibleStudyMain = () => {
 
       {/* Bible Study Content */}
       <div className="h-full flex items-center justify-center">
-        <BibleChapter />
+        <BibleChapter chapter={1} book="GEN" version="BSB" />
       </div>
 
       {/* Chat only on this page */}
