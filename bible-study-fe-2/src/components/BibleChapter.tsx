@@ -47,6 +47,41 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       if (text && selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
 
+        // Check if selection overlaps any existing highlight
+        const selectionRects = Array.from(range.getClientRects());
+
+        const highlightedEls =
+          containerRef.current?.querySelectorAll(".bg-yellow-200");
+
+        let overlapsExistingHighlight = false;
+
+        if (highlightedEls) {
+          for (const el of highlightedEls) {
+            const rects = el.getClientRects();
+            for (const rect of rects) {
+              for (const selRect of selectionRects) {
+                const overlaps =
+                  rect.left < selRect.right &&
+                  rect.right > selRect.left &&
+                  rect.top < selRect.bottom &&
+                  rect.bottom > selRect.top;
+                if (overlaps) {
+                  overlapsExistingHighlight = true;
+                  break;
+                }
+              }
+              if (overlapsExistingHighlight) break;
+            }
+            if (overlapsExistingHighlight) break;
+          }
+        }
+
+        if (overlapsExistingHighlight) {
+          setSelectedRange(null);
+          setTooltipPosition(null);
+          return;
+        }
+
         const getVerseFromNode = (node: Node | null): string | null => {
           while (node) {
             if (node instanceof HTMLElement && node.dataset.verse) {
@@ -70,16 +105,13 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
             text,
           });
 
-          const rects = range.getClientRects();
-
-          if (rects.length > 0 && containerRef.current) {
-            const firstRect = rects[0];
+          if (selectionRects.length > 0 && containerRef.current) {
+            const firstRect = selectionRects[0];
             const containerRect = containerRef.current.getBoundingClientRect();
 
-            // Calculate position relative to the container
             setTooltipPosition({
               x: firstRect.left - containerRect.left + firstRect.width / 2,
-              y: firstRect.top - containerRect.top - 40, // 40px above selected text
+              y: firstRect.top - containerRect.top - 40,
             });
           }
         }
@@ -211,45 +243,47 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           })}
         </div>
       </div>
-      {tooltipPosition && selectedRange && (
-        <div
-          className="absolute z-50 bg-white border border-gray-300 shadow-lg rounded-md px-3 py-1 text-sm transition-all duration-150"
-          style={{
-            left: `${tooltipPosition.x}px`,
-            top: `${tooltipPosition.y}px`,
-            transform: "translateX(-50%)", // Horizontally center
-          }}
-        >
-          <button
-            className="text-blue-600 hover:underline"
-            onClick={() => {
-              const selection = window.getSelection();
-              if (!selection || selection.rangeCount === 0) return;
-
-              const range = selection.getRangeAt(0);
-              const clonedContent = range.cloneContents();
-
-              // Create a span to hold the highlighted content
-              const wrapper = document.createElement("span");
-              wrapper.className = "bg-yellow-200 cursor-pointer";
-              wrapper.appendChild(clonedContent);
-
-              // Replace the selected content with the new highlighted span
-              range.deleteContents();
-              range.insertNode(wrapper);
-
-              // Clean up selection
-              selection.removeAllRanges();
-
-              // Clear tooltip and state
-              setTooltipPosition(null);
-              setSelectedRange(null);
+      {tooltipPosition &&
+        selectedRange &&
+        selectedRange.startVerse === selectedRange.endVerse && (
+          <div
+            className="absolute z-50 bg-white border border-gray-300 shadow-lg rounded-md px-3 py-1 text-sm transition-all duration-150"
+            style={{
+              left: `${tooltipPosition.x}px`,
+              top: `${tooltipPosition.y}px`,
+              transform: "translateX(-50%)", // Horizontally center
             }}
           >
-            Highlight
-          </button>
-        </div>
-      )}
+            <button
+              className="text-blue-600 hover:underline"
+              onClick={() => {
+                const selection = window.getSelection();
+                if (!selection || selection.rangeCount === 0) return;
+
+                const range = selection.getRangeAt(0);
+                const clonedContent = range.cloneContents();
+
+                // Create a span to hold the highlighted content
+                const wrapper = document.createElement("span");
+                wrapper.className = "bg-yellow-200 cursor-pointer";
+                wrapper.appendChild(clonedContent);
+
+                // Replace the selected content with the new highlighted span
+                range.deleteContents();
+                range.insertNode(wrapper);
+
+                // Clean up selection
+                selection.removeAllRanges();
+
+                // Clear tooltip and state
+                setTooltipPosition(null);
+                setSelectedRange(null);
+              }}
+            >
+              Highlight
+            </button>
+          </div>
+        )}
 
       {unhighlightTooltip && (
         <div
