@@ -7,7 +7,7 @@ type ChatInterfaceProps = {
 
 const ChatInterface = ({ isMobile, toggleChat }: ChatInterfaceProps) => {
   return isMobile ? (
-    <div className="fixed inset-0 bg-gray-900 z-40 flex flex-col">
+    <div className="fixed inset-0 bg-gray-900 z-60 flex flex-col">
       <div className="bg-gray-800 p-4 flex items-center justify-between border-b border-gray-700">
         <h2 className="text-lg font-semibold">CHAT INTERFACE</h2>
         <button
@@ -23,7 +23,7 @@ const ChatInterface = ({ isMobile, toggleChat }: ChatInterfaceProps) => {
       </div>
     </div>
   ) : (
-    <div className="fixed right-0 top-0 bottom-0 w-96 bg-gray-800 border-l border-gray-700 z-30 flex flex-col">
+    <div className="fixed right-0 top-0 bottom-0 w-96 bg-gray-800 border-l border-gray-700 z-60 flex flex-col">
       <div className="p-4 border-b border-gray-700 flex items-center justify-between">
         <h2 className="text-lg font-semibold">CHAT INTERFACE</h2>
         <button

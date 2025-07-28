@@ -16,7 +16,7 @@ const Layout = () => {
   }, []);
 
   return (
-    <div className="font-funnel h-screen bg-gray-900 text-white flex overflow-hidden">
+    <div className="font-funnel h-screen flex overflow-hidden">
       <Navbar isMobile={isMobile} />
       <div className="flex-1 flex flex-col relative overflow-y-auto">
         <Outlet context={{ isMobile }} />

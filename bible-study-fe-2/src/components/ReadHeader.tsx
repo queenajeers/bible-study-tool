@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Search, X } from "lucide-react";
 import Select from "react-select";
 
 interface TranslationBook {
@@ -26,6 +26,71 @@ interface ReadHeaderProps {
   onSelectionChange?: (book: string, chapter: number, version: string) => void;
 }
 
+// Hardcoded book categories based on screenshots
+const BOOK_CATEGORIES = {
+  TORAH: ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy"],
+  HISTORICAL: [
+    "Joshua",
+    "Judges",
+    "Ruth",
+    "1 Samuel",
+    "2 Samuel",
+    "1 Kings",
+    "2 Kings",
+    "1 Chronicles",
+    "2 Chronicles",
+    "Ezra",
+    "Nehemiah",
+    "Esther",
+  ],
+  WISDOM: ["Job", "Psalms", "Proverbs", "Ecclesiastes", "Song of Songs"],
+  PROPHETS: [
+    "Isaiah",
+    "Jeremiah",
+    "Lamentations",
+    "Ezekiel",
+    "Daniel",
+    "Hosea",
+    "Joel",
+    "Amos",
+    "Obadiah",
+    "Jonah",
+    "Micah",
+    "Nahum",
+    "Habakkuk",
+    "Zephaniah",
+    "Haggai",
+    "Zechariah",
+    "Malachi",
+  ],
+  GOSPELS: ["Matthew", "Mark", "Luke", "John"],
+  ACTS: ["Acts"],
+  EPISTLES: [
+    "Romans",
+    "1 Corinthians",
+    "2 Corinthians",
+    "Galatians",
+    "Ephesians",
+    "Philippians",
+    "Colossians",
+    "1 Thessalonians",
+    "2 Thessalonians",
+    "1 Timothy",
+    "2 Timothy",
+    "Titus",
+    "Philemon",
+    "Hebrews",
+    "James",
+    "1 Peter",
+    "2 Peter",
+    "1 John",
+    "2 John",
+    "3 John",
+    "Jude",
+  ],
+  REVELATION: ["Revelation"],
+};
+
 export default function ReadHeader({ onSelectionChange }: ReadHeaderProps) {
   const [availableVersions, setAvailableVersions] = useState<VersionOption[]>(
     []
@@ -42,11 +107,10 @@ export default function ReadHeader({ onSelectionChange }: ReadHeaderProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   // Fetch available versions
-  // Set static versions: BSB, ESV, NASB
   useEffect(() => {
     const options: VersionOption[] = [{ label: "BSB", value: "BSB" }];
     setAvailableVersions(options);
-    setSelectedVersion(options[0]); // Default to BSB
+    setSelectedVersion(options[0]);
   }, []);
 
   // Fetch books when version changes
@@ -73,29 +137,32 @@ export default function ReadHeader({ onSelectionChange }: ReadHeaderProps) {
     fetchBooks();
   }, [selectedVersion]);
 
-  // Notify parent of selection change
-  useEffect(() => {
-    if (!onSelectionChange || !selectedVersion || !selectedBook) return;
+  const getBooksByCategory = () => {
+    const categorizedBooks: { [key: string]: TranslationBook[] } = {};
 
-    const selectedBookObj = booksData.find((b) => b.name === selectedBook);
-    if (!selectedBookObj) return;
+    Object.entries(BOOK_CATEGORIES).forEach(([category, bookNames]) => {
+      categorizedBooks[category] = bookNames
+        .map((name) => booksData.find((book) => book.commonName === name))
+        .filter(Boolean) as TranslationBook[];
+    });
 
-    onSelectionChange(
-      selectedBookObj.id,
-      selectedChapter,
-      selectedVersion.value
-    );
-  }, [
-    selectedBook,
-    selectedChapter,
-    selectedVersion,
-    onSelectionChange,
-    booksData,
-  ]);
+    return categorizedBooks;
+  };
 
-  const filteredBooks = booksData.filter((book) =>
-    book.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCategorizedBooks = () => {
+    if (!searchTerm) return getBooksByCategory();
+
+    const filtered: { [key: string]: TranslationBook[] } = {};
+    Object.entries(getBooksByCategory()).forEach(([category, books]) => {
+      const matchingBooks = books.filter((book) =>
+        book.commonName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (matchingBooks.length > 0) {
+        filtered[category] = matchingBooks;
+      }
+    });
+    return filtered;
+  };
 
   const currentBookData = booksData.find((book) => book.name === selectedBook);
 
@@ -110,6 +177,11 @@ export default function ReadHeader({ onSelectionChange }: ReadHeaderProps) {
     setSelectedChapter(chapterNum);
     setIsModalOpen(false);
     setModalStep("book");
+
+    const selectedBookObj = booksData.find((b) => b.name === selectedBook);
+    if (!selectedBookObj || !onSelectionChange || !selectedVersion) return;
+
+    onSelectionChange(selectedBookObj.id, chapterNum, selectedVersion.value);
   };
 
   const closeModal = () => {
@@ -205,67 +277,91 @@ export default function ReadHeader({ onSelectionChange }: ReadHeaderProps) {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Simplified Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-md max-h-[70vh] overflow-hidden shadow-xl">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <div className="flex items-center gap-4">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-2">
                 {modalStep === "chapter" && (
                   <button
                     onClick={goBackToBooks}
                     className="p-1 hover:bg-gray-100 rounded"
                   >
-                    <ArrowLeft className="w-5 h-5 text-gray-600" />
+                    <ArrowLeft className="w-4 h-4 text-gray-600" />
                   </button>
                 )}
-                <h2 className="text-lg font-medium text-gray-500 uppercase tracking-wide">
-                  {modalStep === "book" ? "BOOK" : "CHAPTER"}
+                <h2 className="text-lg font-medium text-gray-800">
+                  {modalStep === "book" ? "Select Book" : "Select Chapter"}
                 </h2>
               </div>
               <button
                 onClick={closeModal}
-                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                className="p-1 hover:bg-gray-100 rounded text-gray-500"
               >
-                <span className="text-sm font-medium">CANCEL</span>
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-3 overflow-y-auto max-h-[50vh]">
+            {/* Modal Content */}
+            <div className="overflow-y-auto max-h-[55vh]">
               {modalStep === "book" ? (
-                <>
-                  <div className="mb-3">
+                <div className="p-4">
+                  {/* Search Bar */}
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Filter Books..."
+                      placeholder="Search books..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
-                  <div className="space-y-1">
-                    {filteredBooks.map((book) => (
+
+                  {/* Categorized Books */}
+                  <div className="space-y-4">
+                    {Object.entries(filteredCategorizedBooks()).map(
+                      ([category, books]) => (
+                        <div key={category}>
+                          <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                            {category}
+                          </h3>
+                          <div className="space-y-1">
+                            {books.map((book) => (
+                              <button
+                                key={book.name}
+                                onClick={() => handleBookSelect(book.name)}
+                                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-gray-900"
+                              >
+                                {book.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4">
+                  {/* Chapter Grid */}
+                  <div className="grid grid-cols-6 gap-2">
+                    {generateChapterGrid().map((chapterNum) => (
                       <button
-                        key={book.name}
-                        onClick={() => handleBookSelect(book.name)}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-base font-medium text-gray-900"
+                        key={chapterNum}
+                        onClick={() => handleChapterSelect(chapterNum)}
+                        className={`aspect-square flex items-center justify-center border rounded text-sm font-medium ${
+                          chapterNum === selectedChapter
+                            ? "bg-blue-500 border-blue-500 text-white"
+                            : "border-gray-300 hover:bg-gray-50 text-gray-700"
+                        }`}
                       >
-                        {book.name}
+                        {chapterNum}
                       </button>
                     ))}
                   </div>
-                </>
-              ) : (
-                <div className="grid grid-cols-5 gap-1">
-                  {generateChapterGrid().map((chapterNum) => (
-                    <button
-                      key={chapterNum}
-                      onClick={() => handleChapterSelect(chapterNum)}
-                      className="aspect-square flex items-center justify-center border border-gray-300 hover:bg-blue-50 hover:border-blue-400 rounded text-base font-medium text-gray-900 transition-colors min-h-[40px]"
-                    >
-                      {chapterNum}
-                    </button>
-                  ))}
                 </div>
               )}
             </div>
