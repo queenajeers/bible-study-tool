@@ -10,21 +10,147 @@ type BibleChapterProps = {
   version: string;
 };
 
+type HighlightData = {
+  [verseId: string]: {
+    highlights: string[];
+  };
+};
+
+// Configurable tooltip actions
+type TooltipAction = {
+  label: string;
+  className?: string;
+  onClick: (
+    selectedRange: SelectedRange,
+    bookMeta: any,
+    chapterMeta: any
+  ) => void;
+};
+
+type SelectedRange = {
+  startVerse: number;
+  endVerse: number;
+  text: string;
+};
+
+// Configuration for tooltip actions - ChatGPT style
+const TOOLTIP_CONFIG = {
+  // Actions for non-highlighted text selection
+  selection: [
+    {
+      label: "Highlight",
+      className:
+        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      onClick: (
+        selectedRange: SelectedRange,
+        bookMeta: any,
+        chapterMeta: any,
+        context: any
+      ) => {
+        context.handleHighlight(selectedRange, bookMeta, chapterMeta);
+      },
+    },
+    {
+      label: "Add Note",
+      className:
+        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      onClick: (
+        selectedRange: SelectedRange,
+        bookMeta: any,
+        chapterMeta: any,
+        context: any
+      ) => {
+        console.log("Add Note clicked for:", selectedRange);
+        // Implement note functionality here
+      },
+    },
+    {
+      label: "Insights",
+      className:
+        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      onClick: (
+        selectedRange: SelectedRange,
+        bookMeta: any,
+        chapterMeta: any,
+        context: any
+      ) => {
+        console.log("Insights clicked for:", selectedRange);
+        // Implement insights functionality here
+      },
+    },
+  ],
+  // Actions for highlighted text
+  highlight: [
+    {
+      label: "Unhighlight",
+      className:
+        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      onClick: (
+        selectedRange: SelectedRange,
+        bookMeta: any,
+        chapterMeta: any,
+        context: any
+      ) => {
+        context.handleUnhighlight();
+      },
+    },
+    {
+      label: "Add Note",
+      className:
+        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      onClick: (
+        selectedRange: SelectedRange,
+        bookMeta: any,
+        chapterMeta: any,
+        context: any
+      ) => {
+        const highlightElement = context.highlightElement;
+        const highlightText = highlightElement?.getAttribute(
+          "data-highlight-text"
+        );
+        const verseId = highlightElement?.getAttribute("data-verse-id");
+        console.log("Add Note clicked for highlighted text:", {
+          highlightText,
+          verseId,
+        });
+        // Implement note functionality for highlighted text here
+      },
+    },
+    {
+      label: "Insights",
+      className:
+        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      onClick: (
+        selectedRange: SelectedRange,
+        bookMeta: any,
+        chapterMeta: any,
+        context: any
+      ) => {
+        const highlightElement = context.highlightElement;
+        const highlightText = highlightElement?.getAttribute(
+          "data-highlight-text"
+        );
+        const verseId = highlightElement?.getAttribute("data-verse-id");
+        console.log("Insights clicked for highlighted text:", {
+          highlightText,
+          verseId,
+        });
+        // Implement insights functionality for highlighted text here
+      },
+    },
+  ],
+};
+
 const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
   const [chapterData, setChapterData] = useState<ChapterData>(
     {} as ChapterData
   );
   const [loading, setLoading] = useState(true);
 
-  const [selectedRange, setSelectedRange] = useState<{
-    startVerse: number;
-    endVerse: number;
-    text: string;
-  } | null>(null);
-
-  const [highlightedRanges, setHighlightedRanges] = useState<
-    { startVerse: number; endVerse: number }[]
-  >([]);
+  const [selectedRange, setSelectedRange] = useState<SelectedRange | null>(
+    null
+  );
+  const [highlightData, setHighlightData] = useState<HighlightData>({});
 
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
@@ -38,9 +164,240 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
   } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const appliedHighlightsRef = useRef<Set<string>>(new Set());
+
+  // Generate storage key for current chapter
+  const getStorageKey = () => `bible-highlights-${version}-${book}-${chapter}`;
+
+  // Load highlights from localStorage
+  const loadHighlights = (): HighlightData => {
+    try {
+      const stored = localStorage.getItem(getStorageKey());
+      return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+      console.error("Error loading highlights:", error);
+      return {};
+    }
+  };
+
+  // Save highlights to localStorage
+  const saveHighlights = (highlights: HighlightData) => {
+    try {
+      localStorage.setItem(getStorageKey(), JSON.stringify(highlights));
+    } catch (error) {
+      console.error("Error saving highlights:", error);
+    }
+  };
+
+  // Generate a unique key for each highlight
+  const getHighlightKey = (verseId: string, text: string) =>
+    `${verseId}:${text}`;
+
+  // Apply only new highlights without clearing existing ones
+  const applyNewHighlights = () => {
+    if (!containerRef.current) return;
+
+    Object.entries(highlightData).forEach(([verseId, data]) => {
+      data.highlights.forEach((highlightText) => {
+        const highlightKey = getHighlightKey(verseId, highlightText);
+
+        // Only apply if not already applied
+        if (!appliedHighlightsRef.current.has(highlightKey)) {
+          const verseElement = containerRef.current?.querySelector(
+            `[data-verse-id="${verseId}"]`
+          );
+          if (verseElement) {
+            const success = highlightTextInElement(
+              verseElement as HTMLElement,
+              highlightText,
+              verseId
+            );
+            if (success) {
+              appliedHighlightsRef.current.add(highlightKey);
+            }
+          }
+        }
+      });
+    });
+  };
+
+  // Remove specific highlight from DOM
+  const removeHighlightFromDOM = (verseId: string, highlightText: string) => {
+    if (!containerRef.current) return;
+
+    const highlightElements = containerRef.current.querySelectorAll(
+      `.bg-yellow-200[data-verse-id="${verseId}"][data-highlight-text="${highlightText}"]`
+    );
+
+    highlightElements.forEach((element) => {
+      const textContent = element.textContent || "";
+      const textNode = document.createTextNode(textContent);
+      if (element.parentNode) {
+        element.parentNode.replaceChild(textNode, element);
+      }
+    });
+
+    // Remove from applied highlights tracking
+    const highlightKey = getHighlightKey(verseId, highlightText);
+    appliedHighlightsRef.current.delete(highlightKey);
+  };
+
+  // Function to highlight specific text within an element
+  const highlightTextInElement = (
+    element: HTMLElement,
+    textToHighlight: string,
+    verseId: string
+  ): boolean => {
+    const walker = document.createTreeWalker(
+      element,
+      NodeFilter.SHOW_TEXT,
+      null
+    );
+
+    const textNodes: Text[] = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      textNodes.push(node as Text);
+    }
+
+    for (const textNode of textNodes) {
+      const text = textNode.textContent || "";
+      const index = text.indexOf(textToHighlight);
+
+      if (index !== -1) {
+        // Split the text node
+        const beforeText = text.substring(0, index);
+        const afterText = text.substring(index + textToHighlight.length);
+
+        // Create new nodes
+        const beforeNode = beforeText
+          ? document.createTextNode(beforeText)
+          : null;
+        const highlightSpan = document.createElement("span");
+        highlightSpan.className = "bg-yellow-200 cursor-pointer";
+        highlightSpan.textContent = textToHighlight;
+        // Store the exact text and verse ID for reliable unhighlighting
+        highlightSpan.setAttribute("data-highlight-text", textToHighlight);
+        highlightSpan.setAttribute("data-verse-id", verseId);
+        const afterNode = afterText ? document.createTextNode(afterText) : null;
+
+        // Replace the original text node
+        const parent = textNode.parentNode;
+        if (parent) {
+          if (beforeNode) parent.insertBefore(beforeNode, textNode);
+          parent.insertBefore(highlightSpan, textNode);
+          if (afterNode) parent.insertBefore(afterNode, textNode);
+          parent.removeChild(textNode);
+        }
+
+        return true; // Successfully highlighted
+      }
+    }
+    return false; // Text not found
+  };
+
+  // Add highlight to data and save
+  const addHighlight = (verseId: string, text: string) => {
+    setHighlightData((prev) => {
+      const updated = {
+        ...prev,
+        [verseId]: {
+          highlights: prev[verseId]
+            ? [...prev[verseId].highlights, text]
+            : [text],
+        },
+      };
+      saveHighlights(updated);
+      return updated;
+    });
+  };
+
+  // Remove highlight from data and save
+  const removeHighlight = (verseId: string, text: string) => {
+    // First remove from DOM immediately
+    removeHighlightFromDOM(verseId, text);
+
+    // Then update state
+    setHighlightData((prev) => {
+      const updated = { ...prev };
+      if (updated[verseId]) {
+        updated[verseId].highlights = updated[verseId].highlights.filter(
+          (highlight) => highlight !== text
+        );
+        // Remove verse entry if no highlights left
+        if (updated[verseId].highlights.length === 0) {
+          delete updated[verseId];
+        }
+      }
+      saveHighlights(updated);
+      return updated;
+    });
+  };
+
+  // Handler functions for tooltip actions
+  const handleHighlight = (
+    selectedRange: SelectedRange,
+    bookMeta: any,
+    chapterMeta: any
+  ) => {
+    if (!selectedRange) return;
+
+    const verseId = `${bookMeta.id}-${chapterMeta.number}-${selectedRange.startVerse}`;
+
+    // Add to highlight data
+    addHighlight(verseId, selectedRange.text);
+
+    // Apply visual highlight immediately
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const clonedContent = range.cloneContents();
+
+    const wrapper = document.createElement("span");
+    wrapper.className = "bg-yellow-200 cursor-pointer";
+    wrapper.appendChild(clonedContent);
+    wrapper.setAttribute("data-highlight-text", selectedRange.text);
+    wrapper.setAttribute("data-verse-id", verseId);
+
+    range.deleteContents();
+    range.insertNode(wrapper);
+
+    // Track this highlight as applied
+    const highlightKey = getHighlightKey(verseId, selectedRange.text);
+    appliedHighlightsRef.current.add(highlightKey);
+
+    selection.removeAllRanges();
+    setTooltipPosition(null);
+    setSelectedRange(null);
+  };
+
+  const handleUnhighlight = () => {
+    if (!unhighlightTooltip) return;
+
+    const highlightElement = unhighlightTooltip.highlightElement;
+    const highlightText = highlightElement.getAttribute("data-highlight-text");
+    const verseId = highlightElement.getAttribute("data-verse-id");
+
+    if (highlightText && verseId) {
+      removeHighlight(verseId, highlightText);
+    }
+
+    setUnhighlightTooltip(null);
+  };
+
+  // Context object for tooltip action handlers
+  const getActionContext = () => ({
+    handleHighlight,
+    handleUnhighlight,
+    highlightElement: unhighlightTooltip?.highlightElement,
+    setTooltipPosition,
+    setSelectedRange,
+    setUnhighlightTooltip,
+  });
 
   useEffect(() => {
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
       const selection = window.getSelection();
       const text = selection?.toString().trim();
 
@@ -49,7 +406,6 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
 
         // Check if selection overlaps any existing highlight
         const selectionRects = Array.from(range.getClientRects());
-
         const highlightedEls =
           containerRef.current?.querySelectorAll(".bg-yellow-200");
 
@@ -111,7 +467,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
 
             setTooltipPosition({
               x: firstRect.left - containerRect.left + firstRect.width / 2,
-              y: firstRect.top - containerRect.top - 40,
+              y: firstRect.top - containerRect.top - 70,
             });
           }
         }
@@ -135,7 +491,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
 
           setUnhighlightTooltip({
             x: rect.left - containerRect.left + rect.width / 2,
-            y: rect.top - containerRect.top - 40,
+            y: rect.top - containerRect.top - 50,
             highlightElement: target,
           });
         }
@@ -152,6 +508,22 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       document.removeEventListener("click", handleClick);
     };
   }, []);
+
+  // Load highlights on mount and when chapter changes
+  useEffect(() => {
+    const highlights = loadHighlights();
+    setHighlightData(highlights);
+    // Clear applied highlights tracking when chapter changes
+    appliedHighlightsRef.current.clear();
+  }, [book, chapter, version]);
+
+  // Apply highlights when data loads or highlights change
+  useEffect(() => {
+    if (!loading && chapterData.chapter) {
+      // Only apply new highlights, don't clear existing ones
+      applyNewHighlights();
+    }
+  }, [loading, chapterData, highlightData]);
 
   useEffect(() => {
     setLoading(true);
@@ -214,20 +586,13 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
               );
             }
             if (block.type === "verse") {
+              const verseId = `${bookMeta.id}-${chapterMeta.number}-${block.number}`;
               return (
                 <span
                   data-verse={block.number}
-                  data-verse-id={`${bookMeta.id}-${chapterMeta.number}-${block.number}`}
-                  className={`text-[20px] font-merriweather verse-span ${
-                    highlightedRanges.some(
-                      (range) =>
-                        block.number >= range.startVerse &&
-                        block.number <= range.endVerse
-                    )
-                      ? "bg-yellow-200"
-                      : ""
-                  }`}
-                  key={`${bookMeta.id}-${chapterMeta.number}-${block.number}`}
+                  data-verse-id={verseId}
+                  className="text-[20px] font-merriweather verse-span"
+                  key={verseId}
                 >
                   <sup className="text-sm text-gray-600 mr-1 font-merriweather font-semibold select-none">
                     {block.number}
@@ -243,80 +608,94 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           })}
         </div>
       </div>
+
+      {/* Selection Tooltip - ChatGPT style for non-highlighted text */}
       {tooltipPosition &&
         selectedRange &&
         selectedRange.startVerse === selectedRange.endVerse && (
           <div
-            className="absolute z-50 bg-white border border-gray-300 shadow-lg rounded-md px-3 py-1 text-sm transition-all duration-150"
+            className="absolute z-50 bg-white border border-gray-200 shadow-lg rounded-xl px-4 py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2 whitespace-nowrap"
             style={{
-              left: `${tooltipPosition.x}px`,
+              left: `${Math.min(
+                Math.max(tooltipPosition.x, 140),
+                (containerRef.current?.offsetWidth || 400) - 140
+              )}px`,
               top: `${tooltipPosition.y}px`,
-              transform: "translateX(-50%)", // Horizontally center
+              transform: "translateX(-50%)",
+              boxShadow:
+                "0 10px 40px -10px rgba(0, 0, 0, 0.12), 0 2px 9px -3px rgba(0, 0, 0, 0.08)",
+              backdropFilter: "blur(16px)",
             }}
           >
-            <button
-              className="text-blue-600 hover:underline"
-              onClick={() => {
-                const selection = window.getSelection();
-                if (!selection || selection.rangeCount === 0) return;
-
-                const range = selection.getRangeAt(0);
-                const clonedContent = range.cloneContents();
-
-                // Create a span to hold the highlighted content
-                const wrapper = document.createElement("span");
-                wrapper.className = "bg-yellow-200 cursor-pointer";
-                wrapper.appendChild(clonedContent);
-
-                // Replace the selected content with the new highlighted span
-                range.deleteContents();
-                range.insertNode(wrapper);
-
-                // Clean up selection
-                selection.removeAllRanges();
-
-                // Clear tooltip and state
-                setTooltipPosition(null);
-                setSelectedRange(null);
+            <div className="flex items-center space-x-6 whitespace-nowrap">
+              {TOOLTIP_CONFIG.selection.map((action, index) => (
+                <button
+                  key={index}
+                  className={`${action.className} px-2 py-1 rounded-md hover:bg-gray-50 active:bg-gray-100 text-sm leading-5 whitespace-nowrap`}
+                  onClick={() =>
+                    action.onClick(
+                      selectedRange,
+                      bookMeta,
+                      chapterMeta,
+                      getActionContext()
+                    )
+                  }
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+            {/* Tooltip arrow */}
+            <div
+              className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-200"
+              style={{
+                filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))",
               }}
-            >
-              Highlight
-            </button>
+            />
           </div>
         )}
 
+      {/* Highlight Tooltip - ChatGPT style for already highlighted text */}
       {unhighlightTooltip && (
         <div
-          className="absolute z-50 bg-white border border-gray-300 shadow-lg rounded-md px-3 py-1 text-sm transition-all duration-150"
+          className="absolute z-50 bg-white border border-gray-200 shadow-lg rounded-xl px-4 py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2 whitespace-nowrap"
           style={{
-            left: `${unhighlightTooltip.x}px`,
+            left: `${Math.min(
+              Math.max(unhighlightTooltip.x, 140),
+              (containerRef.current?.offsetWidth || 400) - 240
+            )}px`,
             top: `${unhighlightTooltip.y}px`,
-            transform: "translateX(-50%)", // Horizontally center
+            transform: "translateX(-50%)",
+            boxShadow:
+              "0 10px 40px -10px rgba(0, 0, 0, 0.12), 0 2px 9px -3px rgba(0, 0, 0, 0.08)",
+            backdropFilter: "blur(16px)",
           }}
         >
-          <button
-            className="text-red-600 hover:underline"
-            onClick={() => {
-              const highlightElement = unhighlightTooltip.highlightElement;
-
-              // Get the text content and create a text node
-              const textContent = highlightElement.textContent || "";
-              const textNode = document.createTextNode(textContent);
-
-              // Replace the highlighted span with plain text
-              if (highlightElement.parentNode) {
-                highlightElement.parentNode.replaceChild(
-                  textNode,
-                  highlightElement
-                );
-              }
-
-              // Clear tooltip
-              setUnhighlightTooltip(null);
+          <div className="flex items-center space-x-6 whitespace-nowrap">
+            {TOOLTIP_CONFIG.highlight.map((action, index) => (
+              <button
+                key={index}
+                className={`${action.className} px-2 py-1 rounded-md hover:bg-gray-50 active:bg-gray-100 text-sm leading-5 whitespace-nowrap`}
+                onClick={() =>
+                  action.onClick(
+                    selectedRange,
+                    bookMeta,
+                    chapterMeta,
+                    getActionContext()
+                  )
+                }
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+          {/* Tooltip arrow */}
+          <div
+            className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-200"
+            style={{
+              filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))",
             }}
-          >
-            Unhighlight
-          </button>
+          />
         </div>
       )}
     </div>
