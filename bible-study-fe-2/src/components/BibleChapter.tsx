@@ -19,6 +19,25 @@ type HighlightData = {
   };
 };
 
+// Configurable highlight styling variables
+const HIGHLIGHT_STYLES = {
+  backgroundColor: "bg-blue-200", // Main highlight background color
+  hoverBackgroundColor: "hover:bg-blue-300", // Hover background color
+  selector: ".bg-blue-200", // CSS selector for highlights (must match backgroundColor)
+};
+
+// Configurable tooltip styling variables
+const TOOLTIP_STYLES = {
+  backgroundColor: "bg-gray-900", // Black background
+  borderColor: "border-gray-700", // Dark border
+  textColor: "text-gray-200", // Light text
+  textHoverColor: "text-white", // White on hover
+  hoverBackgroundColor: "hover:bg-gray-800", // Darker hover background
+  activeBackgroundColor: "active:bg-gray-700", // Active state background
+  shadowColor: "rgba(0, 0, 0, 0.3)", // Darker shadow
+  arrowColor: "border-t-gray-900", // Arrow color to match background
+};
+
 // Configurable tooltip actions
 type TooltipAction = {
   label: string;
@@ -36,14 +55,13 @@ export type SelectedRange = {
   text: string;
 };
 
-// Configuration for tooltip actions - ChatGPT style
+// Configuration for tooltip actions - Dark theme style
 const TOOLTIP_CONFIG = {
   // Actions for non-highlighted text selection
   selection: [
     {
       label: "Highlight",
-      className:
-        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      className: `${TOOLTIP_STYLES.textColor} ${TOOLTIP_STYLES.textHoverColor} font-medium transition-colors duration-150`,
       onClick: (
         selectedRange: SelectedRange | null,
         bookMeta: any,
@@ -54,9 +72,8 @@ const TOOLTIP_CONFIG = {
       },
     },
     {
-      label: "Add Note",
-      className:
-        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      label: "Notes",
+      className: `${TOOLTIP_STYLES.textColor} ${TOOLTIP_STYLES.textHoverColor} font-medium transition-colors duration-150`,
       onClick: (
         selectedRange: SelectedRange | null,
         bookMeta: any,
@@ -69,8 +86,7 @@ const TOOLTIP_CONFIG = {
     },
     {
       label: "Insights",
-      className:
-        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      className: `${TOOLTIP_STYLES.textColor} ${TOOLTIP_STYLES.textHoverColor} font-medium transition-colors duration-150`,
       onClick: (
         selectedRange: SelectedRange | null,
         bookMeta: any,
@@ -78,7 +94,6 @@ const TOOLTIP_CONFIG = {
         context: any
       ) => {
         console.log("Insights clicked for:", selectedRange);
-
         context.handleInsightsForNewText(selectedRange, bookMeta, chapterMeta);
       },
     },
@@ -87,8 +102,7 @@ const TOOLTIP_CONFIG = {
   highlight: [
     {
       label: "Unhighlight",
-      className:
-        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      className: `${TOOLTIP_STYLES.textColor} ${TOOLTIP_STYLES.textHoverColor} font-medium transition-colors duration-150`,
       onClick: (
         selectedRange: SelectedRange | null,
         bookMeta: any,
@@ -99,9 +113,8 @@ const TOOLTIP_CONFIG = {
       },
     },
     {
-      label: "Add Note",
-      className:
-        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      label: "Notes",
+      className: `${TOOLTIP_STYLES.textColor} ${TOOLTIP_STYLES.textHoverColor} font-medium transition-colors duration-150`,
       onClick: (
         selectedRange: SelectedRange | null,
         bookMeta: any,
@@ -122,8 +135,7 @@ const TOOLTIP_CONFIG = {
     },
     {
       label: "Insights",
-      className:
-        "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
+      className: `${TOOLTIP_STYLES.textColor} ${TOOLTIP_STYLES.textHoverColor} font-medium transition-colors duration-150`,
       onClick: (
         _: SelectedRange,
         bookMeta: any,
@@ -227,7 +239,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     if (!containerRef.current) return;
 
     const highlightElements = containerRef.current.querySelectorAll(
-      `.bg-yellow-200[data-verse-id="${verseId}"][data-highlight-text="${highlightText}"]`
+      `${HIGHLIGHT_STYLES.selector}[data-verse-id="${verseId}"][data-highlight-text="${highlightText}"]`
     );
 
     highlightElements.forEach((element) => {
@@ -275,7 +287,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           ? document.createTextNode(beforeText)
           : null;
         const highlightSpan = document.createElement("span");
-        highlightSpan.className = "bg-yellow-200 cursor-pointer";
+        highlightSpan.className = `${HIGHLIGHT_STYLES.backgroundColor} ${HIGHLIGHT_STYLES.hoverBackgroundColor} cursor-pointer transition-colors duration-150`;
         highlightSpan.textContent = textToHighlight;
         // Store the exact text and verse ID for reliable unhighlighting
         highlightSpan.setAttribute("data-highlight-text", textToHighlight);
@@ -356,7 +368,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     const clonedContent = range.cloneContents();
 
     const wrapper = document.createElement("span");
-    wrapper.className = "bg-yellow-200 cursor-pointer";
+    wrapper.className = `${HIGHLIGHT_STYLES.backgroundColor} ${HIGHLIGHT_STYLES.hoverBackgroundColor} cursor-pointer transition-colors duration-150`;
     wrapper.appendChild(clonedContent);
     wrapper.setAttribute("data-highlight-text", selectedRange.text);
     wrapper.setAttribute("data-verse-id", verseId);
@@ -460,8 +472,9 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
 
         // Check if selection overlaps any existing highlight
         const selectionRects = Array.from(range.getClientRects());
-        const highlightedEls =
-          containerRef.current?.querySelectorAll(".bg-yellow-200");
+        const highlightedEls = containerRef.current?.querySelectorAll(
+          HIGHLIGHT_STYLES.selector
+        );
 
         let overlapsExistingHighlight = false;
 
@@ -549,8 +562,8 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
-      // Check if clicked element has bg-yellow-200 class (is highlighted)
-      if (target.classList.contains("bg-yellow-200")) {
+      // Check if clicked element has data-highlight-text attribute (is a highlight)
+      if (target.hasAttribute("data-highlight-text")) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -692,18 +705,17 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
         </div>
       </div>
 
-      {/* Selection Tooltip - ChatGPT style for non-highlighted text */}
+      {/* Selection Tooltip - Dark theme style for non-highlighted text */}
       {tooltipPosition &&
         selectedRange &&
         selectedRange.startVerse === selectedRange.endVerse && (
           <div
-            className="absolute z-50 bg-white border border-gray-200 shadow-lg rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2"
+            className={`absolute z-50 ${TOOLTIP_STYLES.backgroundColor} ${TOOLTIP_STYLES.borderColor} border shadow-lg rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2`}
             style={{
               left: `${tooltipPosition.x}px`,
               top: `${tooltipPosition.y}px`,
               transform: "translateX(-50%)",
-              boxShadow:
-                "0 10px 40px -10px rgba(0, 0, 0, 0.12), 0 2px 9px -3px rgba(0, 0, 0, 0.08)",
+              boxShadow: `0 10px 40px -10px ${TOOLTIP_STYLES.shadowColor}, 0 2px 9px -3px ${TOOLTIP_STYLES.shadowColor}`,
               backdropFilter: "blur(16px)",
               maxWidth: "90vw", // Ensure tooltip doesn't exceed viewport
               width: "max-content",
@@ -713,7 +725,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
               {TOOLTIP_CONFIG.selection.map((action, index) => (
                 <button
                   key={index}
-                  className={`${action.className} px-1.5 py-1 sm:px-2 sm:py-1 rounded-md hover:bg-gray-50 active:bg-gray-100 text-xs sm:text-sm leading-5 whitespace-nowrap`}
+                  className={`${action.className} px-1.5 py-1 sm:px-2 sm:py-1 rounded-md ${TOOLTIP_STYLES.hoverBackgroundColor} ${TOOLTIP_STYLES.activeBackgroundColor} text-xs sm:text-sm leading-5 whitespace-nowrap`}
                   onClick={() =>
                     action.onClick(
                       selectedRange,
@@ -729,24 +741,23 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
             </div>
             {/* Tooltip arrow */}
             <div
-              className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-200"
+              className={`absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${TOOLTIP_STYLES.arrowColor}`}
               style={{
-                filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))",
+                filter: `drop-shadow(0 2px 4px ${TOOLTIP_STYLES.shadowColor})`,
               }}
             />
           </div>
         )}
 
-      {/* Highlight Tooltip - ChatGPT style for already highlighted text */}
+      {/* Highlight Tooltip - Dark theme style for already highlighted text */}
       {unhighlightTooltip && (
         <div
-          className="absolute z-50 bg-white border border-gray-200 shadow-lg rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2"
+          className={`absolute z-50 ${TOOLTIP_STYLES.backgroundColor} ${TOOLTIP_STYLES.borderColor} border shadow-lg rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2`}
           style={{
             left: `${unhighlightTooltip.x}px`,
             top: `${unhighlightTooltip.y}px`,
             transform: "translateX(-50%)",
-            boxShadow:
-              "0 10px 40px -10px rgba(0, 0, 0, 0.12), 0 2px 9px -3px rgba(0, 0, 0, 0.08)",
+            boxShadow: `0 10px 40px -10px ${TOOLTIP_STYLES.shadowColor}, 0 2px 9px -3px ${TOOLTIP_STYLES.shadowColor}`,
             backdropFilter: "blur(16px)",
             maxWidth: "90vw", // Ensure tooltip doesn't exceed viewport
             width: "max-content",
@@ -756,7 +767,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
             {TOOLTIP_CONFIG.highlight.map((action, index) => (
               <button
                 key={index}
-                className={`${action.className} px-1.5 py-1 sm:px-2 sm:py-1 rounded-md hover:bg-gray-50 active:bg-gray-100 text-xs sm:text-sm leading-5 whitespace-nowrap`}
+                className={`${action.className} px-1.5 py-1 sm:px-2 sm:py-1 rounded-md ${TOOLTIP_STYLES.hoverBackgroundColor} ${TOOLTIP_STYLES.activeBackgroundColor} text-xs sm:text-sm leading-5 whitespace-nowrap`}
                 onClick={() =>
                   action.onClick(
                     selectedRange,
@@ -772,9 +783,9 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           </div>
           {/* Tooltip arrow */}
           <div
-            className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-200"
+            className={`absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${TOOLTIP_STYLES.arrowColor}`}
             style={{
-              filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06))",
+              filter: `drop-shadow(0 2px 4px ${TOOLTIP_STYLES.shadowColor})`,
             }}
           />
         </div>
