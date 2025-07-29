@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type {
+  Book,
+  Chapter,
   ChapterData,
   VerseContentItem,
 } from "../Types/bible-chapter-types";
+import { VerseModal } from "../modals/VerseModal";
 
 type BibleChapterProps = {
   book: string;
@@ -27,7 +30,7 @@ type TooltipAction = {
   ) => void;
 };
 
-type SelectedRange = {
+export type SelectedRange = {
   startVerse: number;
   endVerse: number;
   text: string;
@@ -42,7 +45,7 @@ const TOOLTIP_CONFIG = {
       className:
         "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
       onClick: (
-        selectedRange: SelectedRange,
+        selectedRange: SelectedRange | null,
         bookMeta: any,
         chapterMeta: any,
         context: any
@@ -55,7 +58,7 @@ const TOOLTIP_CONFIG = {
       className:
         "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
       onClick: (
-        selectedRange: SelectedRange,
+        selectedRange: SelectedRange | null,
         bookMeta: any,
         chapterMeta: any,
         context: any
@@ -69,13 +72,14 @@ const TOOLTIP_CONFIG = {
       className:
         "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
       onClick: (
-        selectedRange: SelectedRange,
+        selectedRange: SelectedRange | null,
         bookMeta: any,
         chapterMeta: any,
         context: any
       ) => {
         console.log("Insights clicked for:", selectedRange);
-        // Implement insights functionality here
+
+        context.handleInsightsForNewText(selectedRange, bookMeta, chapterMeta);
       },
     },
   ],
@@ -86,7 +90,7 @@ const TOOLTIP_CONFIG = {
       className:
         "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
       onClick: (
-        selectedRange: SelectedRange,
+        selectedRange: SelectedRange | null,
         bookMeta: any,
         chapterMeta: any,
         context: any
@@ -99,7 +103,7 @@ const TOOLTIP_CONFIG = {
       className:
         "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
       onClick: (
-        selectedRange: SelectedRange,
+        selectedRange: SelectedRange | null,
         bookMeta: any,
         chapterMeta: any,
         context: any
@@ -121,21 +125,12 @@ const TOOLTIP_CONFIG = {
       className:
         "text-gray-700 hover:text-gray-900 font-medium transition-colors duration-150",
       onClick: (
-        selectedRange: SelectedRange,
+        _: SelectedRange,
         bookMeta: any,
         chapterMeta: any,
         context: any
       ) => {
-        const highlightElement = context.highlightElement;
-        const highlightText = highlightElement?.getAttribute(
-          "data-highlight-text"
-        );
-        const verseId = highlightElement?.getAttribute("data-verse-id");
-        console.log("Insights clicked for highlighted text:", {
-          highlightText,
-          verseId,
-        });
-        // Implement insights functionality for highlighted text here
+        context.handleInsightsForAHighlight(null, bookMeta, chapterMeta);
       },
     },
   ],
@@ -165,6 +160,12 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const appliedHighlightsRef = useRef<Set<string>>(new Set());
+
+  // Modals Data
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentVerseKey, setCurrentVerseKey] = useState("");
+  const [currentHighlightText, setCurrentHighlightText] = useState("");
+  const [currentVerse, setCurrentVerse] = useState(0);
 
   // Generate storage key for current chapter
   const getStorageKey = () => `bible-highlights-${version}-${book}-${chapter}`;
@@ -337,8 +338,8 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
   // Handler functions for tooltip actions
   const handleHighlight = (
     selectedRange: SelectedRange,
-    bookMeta: any,
-    chapterMeta: any
+    bookMeta: Book,
+    chapterMeta: Chapter
   ) => {
     if (!selectedRange) return;
 
@@ -386,6 +387,57 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     setUnhighlightTooltip(null);
   };
 
+  const handleInsightsForNewText = (
+    selectedRange: SelectedRange,
+    bookMeta: Book,
+    chapterMeta: Chapter
+  ) => {
+    handleHighlight(selectedRange, bookMeta, chapterMeta);
+
+    // SET currentVerseKey
+    const verseKey = `${bookMeta.id}-${chapterMeta.number}-${selectedRange.startVerse}`;
+
+    setCurrentVerseKey(verseKey);
+
+    setCurrentVerse(selectedRange.startVerse);
+    setCurrentHighlightText(selectedRange.text);
+
+    setIsModalOpen(true);
+    setTooltipPosition(null);
+    setUnhighlightTooltip(null);
+  };
+
+  const handleInsightsForAHighlight = (
+    _: SelectedRange, // discard incoming
+    bookMeta: Book,
+    chapterMeta: Chapter
+  ) => {
+    const el = unhighlightTooltip?.highlightElement;
+    const text = el?.getAttribute("data-highlight-text");
+    const verseId = el?.getAttribute("data-verse-id");
+
+    if (text && verseId) {
+      const [bookId, chapterNum, verseNum] = verseId.split("-");
+      const startVerse = parseInt(verseNum, 10);
+
+      const newRange: SelectedRange = {
+        startVerse,
+        endVerse: startVerse,
+        text,
+      };
+
+      setSelectedRange(newRange);
+      setCurrentVerseKey(verseId);
+
+      setCurrentVerse(newRange.startVerse);
+      setCurrentHighlightText(newRange.text);
+
+      setIsModalOpen(true);
+      setTooltipPosition(null);
+      setUnhighlightTooltip(null);
+    }
+  };
+
   // Context object for tooltip action handlers
   const getActionContext = () => ({
     handleHighlight,
@@ -394,6 +446,8 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     setTooltipPosition,
     setSelectedRange,
     setUnhighlightTooltip,
+    handleInsightsForNewText,
+    handleInsightsForAHighlight,
   });
 
   useEffect(() => {
@@ -464,9 +518,23 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           if (selectionRects.length > 0 && containerRef.current) {
             const firstRect = selectionRects[0];
             const containerRect = containerRef.current.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+
+            // Calculate tooltip width (approximate)
+            const tooltipWidth = 280; // Adjust based on your tooltip content
+            const padding = 16; // Padding from screen edges
+
+            // Calculate initial position
+            let x = firstRect.left - containerRect.left + firstRect.width / 2;
+
+            // Ensure tooltip stays within bounds
+            const minX = tooltipWidth / 2 + padding;
+            const maxX = viewportWidth - tooltipWidth / 2 - padding;
+
+            x = Math.min(Math.max(x, minX), maxX);
 
             setTooltipPosition({
-              x: firstRect.left - containerRect.left + firstRect.width / 2,
+              x,
               y: firstRect.top - containerRect.top - 70,
             });
           }
@@ -477,6 +545,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       }
     };
 
+    // Also update the click handler for highlight tooltips
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
@@ -488,10 +557,24 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
         if (containerRef.current) {
           const rect = target.getBoundingClientRect();
           const containerRect = containerRef.current.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+
+          // Calculate tooltip width (approximate)
+          const tooltipWidth = 280;
+          const padding = 16;
+
+          // Calculate initial position
+          let x = rect.left - containerRect.left + rect.width / 2;
+
+          // Ensure tooltip stays within bounds
+          const minX = tooltipWidth / 2 + padding;
+          const maxX = viewportWidth - tooltipWidth / 2 - padding;
+
+          x = Math.min(Math.max(x, minX), maxX);
 
           setUnhighlightTooltip({
-            x: rect.left - containerRect.left + rect.width / 2,
-            y: rect.top - containerRect.top - 50,
+            x,
+            y: rect.top - containerRect.top - 70,
             highlightElement: target,
           });
         }
@@ -508,7 +591,6 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       document.removeEventListener("click", handleClick);
     };
   }, []);
-
   // Load highlights on mount and when chapter changes
   useEffect(() => {
     const highlights = loadHighlights();
@@ -527,6 +609,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
 
   useEffect(() => {
     setLoading(true);
+
     fetch(`https://bible.helloao.org/api/${version}/${book}/${chapter}.json`)
       .then((res) => res.json())
       .then((data) => {
@@ -614,24 +697,23 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
         selectedRange &&
         selectedRange.startVerse === selectedRange.endVerse && (
           <div
-            className="absolute z-50 bg-white border border-gray-200 shadow-lg rounded-xl px-4 py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2 whitespace-nowrap"
+            className="absolute z-50 bg-white border border-gray-200 shadow-lg rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2"
             style={{
-              left: `${Math.min(
-                Math.max(tooltipPosition.x, 140),
-                (containerRef.current?.offsetWidth || 400) - 140
-              )}px`,
+              left: `${tooltipPosition.x}px`,
               top: `${tooltipPosition.y}px`,
               transform: "translateX(-50%)",
               boxShadow:
                 "0 10px 40px -10px rgba(0, 0, 0, 0.12), 0 2px 9px -3px rgba(0, 0, 0, 0.08)",
               backdropFilter: "blur(16px)",
+              maxWidth: "90vw", // Ensure tooltip doesn't exceed viewport
+              width: "max-content",
             }}
           >
-            <div className="flex items-center space-x-6 whitespace-nowrap">
+            <div className="flex items-center space-x-3 sm:space-x-6 whitespace-nowrap">
               {TOOLTIP_CONFIG.selection.map((action, index) => (
                 <button
                   key={index}
-                  className={`${action.className} px-2 py-1 rounded-md hover:bg-gray-50 active:bg-gray-100 text-sm leading-5 whitespace-nowrap`}
+                  className={`${action.className} px-1.5 py-1 sm:px-2 sm:py-1 rounded-md hover:bg-gray-50 active:bg-gray-100 text-xs sm:text-sm leading-5 whitespace-nowrap`}
                   onClick={() =>
                     action.onClick(
                       selectedRange,
@@ -658,24 +740,23 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       {/* Highlight Tooltip - ChatGPT style for already highlighted text */}
       {unhighlightTooltip && (
         <div
-          className="absolute z-50 bg-white border border-gray-200 shadow-lg rounded-xl px-4 py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2 whitespace-nowrap"
+          className="absolute z-50 bg-white border border-gray-200 shadow-lg rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-sm transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2"
           style={{
-            left: `${Math.min(
-              Math.max(unhighlightTooltip.x, 140),
-              (containerRef.current?.offsetWidth || 400) - 240
-            )}px`,
+            left: `${unhighlightTooltip.x}px`,
             top: `${unhighlightTooltip.y}px`,
             transform: "translateX(-50%)",
             boxShadow:
               "0 10px 40px -10px rgba(0, 0, 0, 0.12), 0 2px 9px -3px rgba(0, 0, 0, 0.08)",
             backdropFilter: "blur(16px)",
+            maxWidth: "90vw", // Ensure tooltip doesn't exceed viewport
+            width: "max-content",
           }}
         >
-          <div className="flex items-center space-x-6 whitespace-nowrap">
+          <div className="flex items-center space-x-3 sm:space-x-6 whitespace-nowrap">
             {TOOLTIP_CONFIG.highlight.map((action, index) => (
               <button
                 key={index}
-                className={`${action.className} px-2 py-1 rounded-md hover:bg-gray-50 active:bg-gray-100 text-sm leading-5 whitespace-nowrap`}
+                className={`${action.className} px-1.5 py-1 sm:px-2 sm:py-1 rounded-md hover:bg-gray-50 active:bg-gray-100 text-xs sm:text-sm leading-5 whitespace-nowrap`}
                 onClick={() =>
                   action.onClick(
                     selectedRange,
@@ -698,6 +779,14 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           />
         </div>
       )}
+      <VerseModal
+        isOpen={isModalOpen}
+        verseKey={currentVerseKey}
+        onClose={() => setIsModalOpen(false)}
+        verseReference={`${bookMeta.title} ${chapterMeta.number}`}
+        verseNumber={currentVerse}
+        highlightText={currentHighlightText}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Search, X } from "lucide-react";
+import { ArrowLeft, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Select from "react-select";
 
 interface TranslationBook {
@@ -118,6 +118,9 @@ export default function ReadHeader({ onSelectionChange }: ReadHeaderProps) {
     const fetchBooks = async () => {
       if (!selectedVersion) return;
       try {
+        console.log(
+          `https://bible.helloao.org/api/${selectedVersion.value}/books.json`
+        );
         const res = await fetch(
           `https://bible.helloao.org/api/${selectedVersion.value}/books.json`
         );
@@ -165,6 +168,100 @@ export default function ReadHeader({ onSelectionChange }: ReadHeaderProps) {
   };
 
   const currentBookData = booksData.find((book) => book.name === selectedBook);
+
+  // Navigation helper functions
+  const canGoPrevious = () => {
+    if (!currentBookData) return false;
+    if (selectedChapter > 1) return true;
+
+    // Check if there's a previous book
+    const currentIndex = booksData.findIndex(
+      (book) => book.name === selectedBook
+    );
+    return currentIndex > 0;
+  };
+
+  const canGoNext = () => {
+    if (!currentBookData) return false;
+    if (selectedChapter < currentBookData.numberOfChapters) return true;
+
+    // Check if there's a next book
+    const currentIndex = booksData.findIndex(
+      (book) => book.name === selectedBook
+    );
+    return currentIndex < booksData.length - 1;
+  };
+
+  const goToPrevious = () => {
+    if (!currentBookData) return;
+
+    if (selectedChapter > 1) {
+      // Go to previous chapter in same book
+      const newChapter = selectedChapter - 1;
+      setSelectedChapter(newChapter);
+
+      if (onSelectionChange && selectedVersion) {
+        onSelectionChange(
+          currentBookData.id,
+          newChapter,
+          selectedVersion.value
+        );
+      }
+    } else {
+      // Go to last chapter of previous book
+      const currentIndex = booksData.findIndex(
+        (book) => book.name === selectedBook
+      );
+      if (currentIndex > 0) {
+        const previousBook = booksData[currentIndex - 1];
+        const lastChapter = previousBook.numberOfChapters;
+
+        setSelectedBook(previousBook.name);
+        setSelectedChapter(lastChapter);
+
+        if (onSelectionChange && selectedVersion) {
+          onSelectionChange(
+            previousBook.id,
+            lastChapter,
+            selectedVersion.value
+          );
+        }
+      }
+    }
+  };
+
+  const goToNext = () => {
+    if (!currentBookData) return;
+
+    if (selectedChapter < currentBookData.numberOfChapters) {
+      // Go to next chapter in same book
+      const newChapter = selectedChapter + 1;
+      setSelectedChapter(newChapter);
+
+      if (onSelectionChange && selectedVersion) {
+        onSelectionChange(
+          currentBookData.id,
+          newChapter,
+          selectedVersion.value
+        );
+      }
+    } else {
+      // Go to first chapter of next book
+      const currentIndex = booksData.findIndex(
+        (book) => book.name === selectedBook
+      );
+      if (currentIndex < booksData.length - 1) {
+        const nextBook = booksData[currentIndex + 1];
+
+        setSelectedBook(nextBook.name);
+        setSelectedChapter(1);
+
+        if (onSelectionChange && selectedVersion) {
+          onSelectionChange(nextBook.id, 1, selectedVersion.value);
+        }
+      }
+    }
+  };
 
   const handleBookSelect = (bookName: string) => {
     setSelectedBook(bookName);
@@ -231,50 +328,94 @@ export default function ReadHeader({ onSelectionChange }: ReadHeaderProps) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-center gap-6 py-6 px-4 border-b border-gray-300 bg-white sticky top-0 z-40">
-        {/* Book & Chapter Selector */}
-        <div className="flex flex-col">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Book & Chapter
-          </label>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-between min-w-[200px] px-4 py-2 border border-gray-300 rounded-md bg-white hover:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <span className="text-gray-900">
-              {selectedBook} {selectedChapter}
-            </span>
-            <svg
-              className="w-4 h-4 text-gray-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+      <div className="flex items-center justify-between py-4 md:py-6 px-4 border-b border-gray-300 bg-white sticky top-0 z-40">
+        {/* Previous Button */}
+        <button
+          onClick={goToPrevious}
+          disabled={!canGoPrevious()}
+          className={`flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full border transition-all flex-shrink-0 ${
+            canGoPrevious()
+              ? "border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700"
+              : "border-gray-200 text-gray-300 cursor-not-allowed"
+          }`}
+        >
+          <ChevronLeft className="w-6 h-6 md:w-7 md:h-7" />
+        </button>
+
+        {/* Center Content Container */}
+        <div className="flex items-center gap-4 md:gap-6 mx-4 md:mx-6">
+          {/* Book & Chapter Selector */}
+          <div className="flex flex-col">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2 text-center">
+              Book & Chapter
+            </label>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center justify-between min-w-[160px] md:min-w-[220px] px-4 md:px-5 py-2 md:py-2.5 border border-gray-300 rounded-full md:rounded-lg bg-white hover:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={4}
-                d="M19 9l-7 7-7-7"
+              <span className="text-gray-900 text-center flex-1 text-sm md:text-base font-medium truncate">
+                {selectedBook} {selectedChapter}
+              </span>
+              <svg
+                className="w-3 h-3 md:w-4 md:h-4 text-gray-300 ml-2 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={4}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Version Selector */}
+          <div className="flex flex-col">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2 text-center">
+              Version
+            </label>
+            <div className="min-w-[80px] md:min-w-[100px]">
+              <Select
+                options={availableVersions}
+                value={selectedVersion}
+                onChange={(val) => val && setSelectedVersion(val)}
+                styles={{
+                  ...customSelectStyles,
+                  control: (base: any, state: any) => ({
+                    ...customSelectStyles.control(base, state),
+                    minHeight: 36,
+                    fontSize: "0.875rem",
+                    borderRadius: "9999px",
+                    "@media (min-width: 768px)": {
+                      minHeight: 42,
+                      fontSize: "1rem",
+                      borderRadius: "0.5rem",
+                    },
+                  }),
+                }}
+                placeholder="Loading..."
+                isSearchable={false}
+                isDisabled={!availableVersions.length}
               />
-            </svg>
-          </button>
+            </div>
+          </div>
         </div>
 
-        {/* Version Selector */}
-        <div className="flex flex-col">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Version
-          </label>
-          <Select
-            options={availableVersions}
-            value={selectedVersion}
-            onChange={(val) => val && setSelectedVersion(val)}
-            styles={customSelectStyles}
-            placeholder="Loading versions..."
-            isSearchable={false}
-            isDisabled={!availableVersions.length}
-          />
-        </div>
+        {/* Next Button */}
+        <button
+          onClick={goToNext}
+          disabled={!canGoNext()}
+          className={`flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full border transition-all flex-shrink-0 ${
+            canGoNext()
+              ? "border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700"
+              : "border-gray-200 text-gray-300 cursor-not-allowed"
+          }`}
+        >
+          <ChevronRight className="w-6 h-6 md:w-7 md:h-7" />
+        </button>
       </div>
 
       {/* Simplified Modal */}

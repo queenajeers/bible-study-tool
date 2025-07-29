@@ -27,6 +27,7 @@ export interface Chapter {
 export interface Book {
   id: string;
   title: string;
+  numberOfChapters: number;
 }
 
 export interface Translation {
