@@ -95,7 +95,8 @@ const TOOLTIP_CONFIG = {
         ) as HTMLElement;
 
         if (verseEl && noteId) {
-          context.openStickyNote(noteId, verseEl);
+          console.log("SAVING THE TEXT " + selectedRange.text);
+          context.openStickyNote(noteId, verseEl, true, selectedRange.text);
         }
 
         context.setTooltipPosition(null);
@@ -152,7 +153,7 @@ const TOOLTIP_CONFIG = {
         ) as HTMLElement;
 
         if (verseId && verseEl) {
-          context.openStickyNote(noteId, verseEl);
+          context.openStickyNote(noteId, verseEl, false);
         }
 
         context.setUnhighlightTooltip(null);
@@ -483,9 +484,25 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     }
   };
 
-  const openStickyNote = (verseId: string, anchorElement: HTMLElement) => {
+  const openStickyNote = (
+    verseId: string,
+    anchorElement: HTMLElement,
+    isNew?: boolean,
+    selectedText?: string
+  ) => {
     const rect = anchorElement.getBoundingClientRect();
     const containerRect = containerRef.current?.getBoundingClientRect();
+
+    if (isNew) {
+      console.log("SAVING");
+      localStorage.setItem(
+        `note-${verseId}`,
+        JSON.stringify({
+          NotesByUser: "",
+          verseLinked: selectedText,
+        })
+      );
+    }
 
     if (containerRect) {
       setNotePanelPosition({
@@ -517,6 +534,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
 
       if (text && selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
+        setNotePanelVerseId(null);
 
         // Check if selection overlaps any existing highlight
         const selectionRects = Array.from(range.getClientRects());
@@ -692,6 +710,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     contentArray.map((item, index) => {
       if (typeof item === "string") return item;
       if (item.lineBreak) return <br key={`lb-${index}`} />;
+      if (item.noteId) return <span key={`n-${index}`}> </span>;
       if (item.poem)
         return (
           <span key={`poem-${index}`} className="italic-[0.5]">
@@ -854,10 +873,17 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           <div className="flex items-start justify-between mb-3">
             <div className="min-w-0 flex-1">
               <div className="text-xs text-yellow-700 font-medium">
-                {bookMeta.title} {chapterMeta.number}
+                {bookMeta.title} {chapterMeta.number} :{" "}
+                {notePanelVerseId?.split("-")[2]}
               </div>
               <div className="text-sm text-yellow-900 font-medium truncate">
-                "{currentHighlightText}"
+                "
+                {localStorage.getItem(`note-${notePanelVerseId}`)?.length
+                  ? JSON.parse(
+                      localStorage.getItem(`note-${notePanelVerseId}`)!
+                    ).verseLinked
+                  : ""}
+                "
               </div>
             </div>
             <button
@@ -885,11 +911,26 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
             className="w-full bg-transparent text-sm text-yellow-900 placeholder-yellow-500 resize-none focus:outline-none"
             rows={6}
             defaultValue={
-              localStorage.getItem(`note-${notePanelVerseId}`) || ""
+              localStorage.getItem(`note-${notePanelVerseId}`)?.length
+                ? JSON.parse(localStorage.getItem(`note-${notePanelVerseId}`)!)
+                    .NotesByUser
+                : ""
             }
-            onBlur={(e) =>
-              localStorage.setItem(`note-${notePanelVerseId}`, e.target.value)
-            }
+            onBlur={(e) => {
+              const storedNote = localStorage.getItem(
+                `note-${notePanelVerseId}`
+              );
+              const existingNote = storedNote ? JSON.parse(storedNote) : {};
+
+              // Safely update localStorage with preserved verseLinked
+              localStorage.setItem(
+                `note-${notePanelVerseId}`,
+                JSON.stringify({
+                  verseLinked: existingNote.verseLinked,
+                  NotesByUser: e.target.value,
+                })
+              );
+            }}
           />
         </div>
       )}
