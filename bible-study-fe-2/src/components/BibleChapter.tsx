@@ -80,8 +80,25 @@ const TOOLTIP_CONFIG = {
         chapterMeta: any,
         context: any
       ) => {
-        console.log("Add Note clicked for:", selectedRange);
-        // Implement note functionality here
+        if (!selectedRange) return;
+
+        const verseId = `${bookMeta.id}-${chapterMeta.number}-${selectedRange.startVerse}`;
+        const textId = selectedRange.text.replace(/\s+/g, "");
+        const noteId = `${verseId}-${textId}`;
+
+        // Highlight first if not already highlighted
+        context.handleHighlight(selectedRange, bookMeta, chapterMeta);
+
+        // Find verse element
+        const verseEl = context.containerRef.current?.querySelector(
+          `[data-verse-id="${verseId}"]`
+        ) as HTMLElement;
+
+        if (verseEl && noteId) {
+          context.openStickyNote(noteId, verseEl);
+        }
+
+        context.setTooltipPosition(null);
       },
     },
     {
@@ -122,15 +139,23 @@ const TOOLTIP_CONFIG = {
         context: any
       ) => {
         const highlightElement = context.highlightElement;
-        const highlightText = highlightElement?.getAttribute(
+        const verseId = highlightElement?.getAttribute("data-verse-id");
+        let textId: string = highlightElement?.getAttribute(
           "data-highlight-text"
         );
-        const verseId = highlightElement?.getAttribute("data-verse-id");
-        console.log("Add Note clicked for highlighted text:", {
-          highlightText,
-          verseId,
-        });
-        // Implement note functionality for highlighted text here
+        textId = textId.replace(/\s+/g, "");
+
+        const noteId = `${verseId}-${textId}`;
+
+        const verseEl = context.containerRef.current?.querySelector(
+          `[data-verse-id="${verseId}"]`
+        ) as HTMLElement;
+
+        if (verseId && verseEl) {
+          context.openStickyNote(noteId, verseEl);
+        }
+
+        context.setUnhighlightTooltip(null);
       },
     },
     {
@@ -168,6 +193,12 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     x: number;
     y: number;
     highlightElement: HTMLElement;
+  } | null>(null);
+
+  const [notePanelVerseId, setNotePanelVerseId] = useState<string | null>(null);
+  const [notePanelPosition, setNotePanelPosition] = useState<{
+    x: number;
+    y: number;
   } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -373,6 +404,8 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     wrapper.setAttribute("data-highlight-text", selectedRange.text);
     wrapper.setAttribute("data-verse-id", verseId);
 
+    setCurrentHighlightText(selectedRange.text);
+
     range.deleteContents();
     range.insertNode(wrapper);
 
@@ -450,6 +483,19 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     }
   };
 
+  const openStickyNote = (verseId: string, anchorElement: HTMLElement) => {
+    const rect = anchorElement.getBoundingClientRect();
+    const containerRect = containerRef.current?.getBoundingClientRect();
+
+    if (containerRect) {
+      setNotePanelPosition({
+        x: rect.right - containerRect.left + 20, // Right side + 20px offset
+        y: rect.top - containerRect.top,
+      });
+      setNotePanelVerseId(verseId);
+    }
+  };
+
   // Context object for tooltip action handlers
   const getActionContext = () => ({
     handleHighlight,
@@ -460,6 +506,8 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     setUnhighlightTooltip,
     handleInsightsForNewText,
     handleInsightsForAHighlight,
+    containerRef,
+    openStickyNote,
   });
 
   useEffect(() => {
@@ -566,6 +614,11 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       if (target.hasAttribute("data-highlight-text")) {
         e.preventDefault();
         e.stopPropagation();
+        const text = target?.getAttribute("data-highlight-text");
+        if (text) {
+          setCurrentHighlightText(text);
+        }
+        setNotePanelVerseId(null);
 
         if (containerRef.current) {
           const rect = target.getBoundingClientRect();
@@ -790,6 +843,57 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           />
         </div>
       )}
+      {notePanelVerseId && notePanelPosition && (
+        <div
+          className="absolute z-40 bg-yellow-50 rounded-lg shadow-lg p-4 w-[300px] max-w-full border border-yellow-200"
+          style={{
+            left: notePanelPosition.x,
+            top: notePanelPosition.y,
+          }}
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-xs text-yellow-700 font-medium">
+                {bookMeta.title} {chapterMeta.number}
+              </div>
+              <div className="text-sm text-yellow-900 font-medium truncate">
+                "{currentHighlightText}"
+              </div>
+            </div>
+            <button
+              onClick={() => setNotePanelVerseId(null)}
+              className="text-yellow-600 hover:text-yellow-800 p-1 -m-1 flex-shrink-0"
+              title="Close"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+          <textarea
+            placeholder="Add your note..."
+            className="w-full bg-transparent text-sm text-yellow-900 placeholder-yellow-500 resize-none focus:outline-none"
+            rows={6}
+            defaultValue={
+              localStorage.getItem(`note-${notePanelVerseId}`) || ""
+            }
+            onBlur={(e) =>
+              localStorage.setItem(`note-${notePanelVerseId}`, e.target.value)
+            }
+          />
+        </div>
+      )}
+
       <VerseModal
         isOpen={isModalOpen}
         verseKey={currentVerseKey}
