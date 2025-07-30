@@ -5,7 +5,10 @@ import type {
   ChapterData,
   VerseContentItem,
 } from "../Types/bible-chapter-types";
-import { VerseModal } from "../modals/VerseModal";
+// import { VerseModal } from "../modals/VerseModal";
+import { Info } from "lucide-react";
+import { SideModalLayout } from "../modals/SideModalLayout";
+import { VerseModalContent } from "../modals/VerseModalContent";
 
 type BibleChapterProps = {
   book: string;
@@ -732,10 +735,22 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       className="relative flex justify-center px-6 sm:px-8 lg:px-12 py-16 bg-white min-h-screen"
     >
       <div className="max-w-lg w-full">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="font-merriweather font-light text-4xl text-gray-900 leading-tight tracking-tight">
-            {bookMeta.title} {chapterMeta.number}
-          </h1>
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <h1 className="font-merriweather font-light text-4xl text-gray-900 leading-tight tracking-tight">
+              {bookMeta.title} {chapterMeta.number}
+            </h1>
+            <button
+              onClick={() => {
+                // Trigger your context modal or drawer here
+                console.log("Open context panel/modal");
+              }}
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-1.5 text-sm font-medium shadow-sm transition"
+            >
+              <Info className="w-4 h-4" />
+              Background & Context
+            </button>
+          </div>
         </div>
 
         <div
@@ -934,15 +949,25 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           />
         </div>
       )}
-
-      <VerseModal
+      <SideModalLayout
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      >
+        <VerseModalContent
+          verseKey={currentVerseKey}
+          verseNumber={currentVerse}
+          highlightText={currentHighlightText}
+          onClose={() => setIsModalOpen(false)}
+        />
+      </SideModalLayout>
+      {/* <VerseModal
         isOpen={isModalOpen}
         verseKey={currentVerseKey}
         onClose={() => setIsModalOpen(false)}
         verseReference={`${bookMeta.title} ${chapterMeta.number}`}
         verseNumber={currentVerse}
         highlightText={currentHighlightText}
-      />
+      /> */}
     </div>
   );
 };
