@@ -9,6 +9,7 @@ import type {
 import { Info } from "lucide-react";
 import { SideModalLayout } from "../modals/SideModalLayout";
 import { VerseModalContent } from "../modals/VerseModalContent";
+import { ContextInfoModal } from "../modals/ContextInfoModal";
 
 type BibleChapterProps = {
   book: string;
@@ -203,6 +204,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
   const [notePanelPosition, setNotePanelPosition] = useState<{
     x: number;
     y: number;
+    positionMode?: "sidebar" | "overlay";
   } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -213,6 +215,8 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
   const [currentVerseKey, setCurrentVerseKey] = useState("");
   const [currentHighlightText, setCurrentHighlightText] = useState("");
   const [currentVerse, setCurrentVerse] = useState(0);
+
+  const [isContextOpen, setIsContextOpen] = useState(false);
 
   // Generate storage key for current chapter
   const getStorageKey = () => `bible-highlights-${version}-${book}-${chapter}`;
@@ -508,10 +512,53 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     }
 
     if (containerRect) {
-      setNotePanelPosition({
-        x: rect.right - containerRect.left + 20, // Right side + 20px offset
-        y: rect.top - containerRect.top,
-      });
+      const viewportWidth = window.innerWidth;
+      const notePanelWidth = 350; // Panel width
+      const padding = 20;
+      const contentRightEdge = containerRect.left + containerRect.width;
+      const availableRightSpace = viewportWidth - contentRightEdge - padding;
+
+      let x, y;
+      let positionMode = "sidebar"; // 'sidebar' or 'overlay'
+
+      // Check if we have enough space for sidebar on larger screens
+      if (viewportWidth >= 1024 && availableRightSpace >= notePanelWidth) {
+        // Sidebar mode: Position in the right margin area
+        x = contentRightEdge + padding;
+        y = rect.top - containerRect.top;
+        positionMode = "sidebar";
+      } else {
+        // Overlay mode: Position over content with smart positioning
+        positionMode = "overlay";
+
+        // Try right side first
+        x = rect.right - containerRect.left + 20;
+
+        // If not enough space on right, try left
+        if (x + notePanelWidth > viewportWidth - padding) {
+          x = rect.left - containerRect.left - notePanelWidth - 20;
+        }
+
+        // If still not enough space, center it
+        if (x < padding) {
+          x = Math.max(padding, (viewportWidth - notePanelWidth) / 2);
+        }
+
+        y = rect.top - containerRect.top;
+      }
+
+      // Ensure y position stays in viewport
+      const viewportHeight = window.innerHeight;
+      const notePanelHeight = 280;
+
+      if (y + notePanelHeight > viewportHeight - padding) {
+        y = Math.max(padding, viewportHeight - notePanelHeight - padding);
+      }
+
+      if (y < padding) {
+        y = padding;
+      }
+      setNotePanelPosition({ x, y, positionMode });
       setNotePanelVerseId(verseId);
     }
   };
@@ -742,8 +789,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
             </h1>
             <button
               onClick={() => {
-                // Trigger your context modal or drawer here
-                console.log("Open context panel/modal");
+                setIsContextOpen(true);
               }}
               className="mt-3 inline-flex items-center gap-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-1.5 text-sm font-medium shadow-sm transition"
             >
@@ -879,74 +925,98 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       )}
       {notePanelVerseId && notePanelPosition && (
         <div
-          className="absolute z-40 bg-yellow-50 rounded-lg shadow-lg p-4 w-[300px] max-w-full border border-yellow-200"
+          className="fixed z-40 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl shadow-2xl border border-yellow-200/50 backdrop-blur-sm"
           style={{
             left: notePanelPosition.x,
             top: notePanelPosition.y,
+            width: "min(300px, calc(100vw - 32px))", // Responsive width with padding
+            maxHeight: "calc(100vh - 32px)", // Prevent vertical overflow
           }}
         >
-          <div className="flex items-start justify-between mb-3">
-            <div className="min-w-0 flex-1">
-              <div className="text-xs text-yellow-700 font-medium">
-                {bookMeta.title} {chapterMeta.number} :{" "}
-                {notePanelVerseId?.split("-")[2]}
+          {/* Header with gradient background */}
+          <div className="bg-gradient-to-r from-yellow-100 to-amber-100 rounded-t-xl p-4 border-b border-yellow-200/30">
+            <div className="flex items-start justify-between">
+              <div className="min-w-0 flex-1 pr-2">
+                <div className="text-xs text-yellow-700 font-semibold tracking-wide uppercase">
+                  {bookMeta.title} {chapterMeta.number}:
+                  {notePanelVerseId?.split("-")[2]}
+                </div>
+                <div
+                  className="text-sm text-yellow-900 font-medium mt-1 leading-relaxed break-words"
+                  style={{ fontFamily: '"Comic Sans MS", cursive, sans-serif' }}
+                >
+                  "
+                  {localStorage.getItem(`note-${notePanelVerseId}`)?.length
+                    ? JSON.parse(
+                        localStorage.getItem(`note-${notePanelVerseId}`)!
+                      ).verseLinked
+                    : ""}
+                  "
+                </div>
               </div>
-              <div className="text-sm text-yellow-900 font-medium truncate">
-                "
-                {localStorage.getItem(`note-${notePanelVerseId}`)?.length
+              <button
+                onClick={() => setNotePanelVerseId(null)}
+                className="text-yellow-600 hover:text-yellow-800 hover:bg-yellow-200/50 p-1.5 -m-1 flex-shrink-0 rounded-full transition-all duration-200"
+                title="Close"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Note content area */}
+          <div className="p-4">
+            <textarea
+              placeholder="Add your thoughts, insights, or reflections here..."
+              className="w-full bg-transparent text-sm text-yellow-900 placeholder-yellow-500/70 resize-none focus:outline-none leading-relaxed"
+              style={{
+                fontFamily: '"Comic Sans MS", cursive, sans-serif',
+                minHeight: "120px",
+                maxHeight: "calc(100vh - 200px)", // Responsive max height
+              }}
+              defaultValue={
+                localStorage.getItem(`note-${notePanelVerseId}`)?.length
                   ? JSON.parse(
                       localStorage.getItem(`note-${notePanelVerseId}`)!
-                    ).verseLinked
-                  : ""}
-                "
-              </div>
-            </div>
-            <button
-              onClick={() => setNotePanelVerseId(null)}
-              className="text-yellow-600 hover:text-yellow-800 p-1 -m-1 flex-shrink-0"
-              title="Close"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-          <textarea
-            placeholder="Add your note..."
-            className="w-full bg-transparent text-sm text-yellow-900 placeholder-yellow-500 resize-none focus:outline-none"
-            rows={6}
-            defaultValue={
-              localStorage.getItem(`note-${notePanelVerseId}`)?.length
-                ? JSON.parse(localStorage.getItem(`note-${notePanelVerseId}`)!)
-                    .NotesByUser
-                : ""
-            }
-            onBlur={(e) => {
-              const storedNote = localStorage.getItem(
-                `note-${notePanelVerseId}`
-              );
-              const existingNote = storedNote ? JSON.parse(storedNote) : {};
+                    ).NotesByUser
+                  : ""
+              }
+              onBlur={(e) => {
+                const storedNote = localStorage.getItem(
+                  `note-${notePanelVerseId}`
+                );
+                const existingNote = storedNote ? JSON.parse(storedNote) : {};
 
-              // Safely update localStorage with preserved verseLinked
-              localStorage.setItem(
-                `note-${notePanelVerseId}`,
-                JSON.stringify({
-                  verseLinked: existingNote.verseLinked,
-                  NotesByUser: e.target.value,
-                })
-              );
-            }}
-          />
+                localStorage.setItem(
+                  `note-${notePanelVerseId}`,
+                  JSON.stringify({
+                    verseLinked: existingNote.verseLinked,
+                    NotesByUser: e.target.value,
+                  })
+                );
+              }}
+            />
+
+            {/* Save indicator */}
+            <div
+              className="mt-2 text-xs text-yellow-600/80 italic"
+              style={{ fontFamily: '"Comic Sans MS", cursive, sans-serif' }}
+            >
+              Notes auto-save when you click away
+            </div>
+          </div>
         </div>
       )}
       <SideModalLayout
@@ -960,14 +1030,12 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           onClose={() => setIsModalOpen(false)}
         />
       </SideModalLayout>
-      {/* <VerseModal
-        isOpen={isModalOpen}
-        verseKey={currentVerseKey}
-        onClose={() => setIsModalOpen(false)}
-        verseReference={`${bookMeta.title} ${chapterMeta.number}`}
-        verseNumber={currentVerse}
-        highlightText={currentHighlightText}
-      /> */}
+      <ContextInfoModal
+        isOpen={isContextOpen}
+        onClose={() => setIsContextOpen(false)}
+        book={book}
+        chapter={chapter}
+      />
     </div>
   );
 };
