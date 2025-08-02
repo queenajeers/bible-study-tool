@@ -130,6 +130,7 @@ const TOOLTIP_CONFIG = {
         context: any
       ) => {
         if (selectedRange?.text?.split(/\s+/).length === 1) {
+          context.setCurrentVerse(selectedRange.startVerse);
           context.setStrongsModal(selectedRange.text);
         }
       },
@@ -600,6 +601,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       setStrongsWord(word);
       setIsStrongsOpen(true);
     },
+    setCurrentVerse,
   });
 
   useEffect(() => {
@@ -795,6 +797,40 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       return null;
     });
 
+  const hasStrongsData = (
+    book: string,
+    chapter: number,
+    word: string,
+    verse: number
+  ): boolean => {
+    const key = `strongs-${book}-${chapter}-${verse}-${word.toLowerCase()}`;
+    return localStorage.getItem(key) !== null;
+  };
+  const getStrongsWordsForVerse = (
+    book: string,
+    chapter: number,
+    verse: number,
+    contentArray: VerseContentItem[]
+  ): string[] => {
+    const words: string[] = [];
+
+    for (const item of contentArray) {
+      if (typeof item === "string") {
+        const candidates = item.match(/\b[a-zA-Z]+\b/g);
+        if (candidates) {
+          candidates.forEach((word) => {
+            if (hasStrongsData(book, chapter, word, verse)) {
+              console.log("FOUND!");
+              words.push(word);
+            }
+          });
+        }
+      }
+    }
+
+    return [...new Set(words.map((w) => w.toLowerCase()))]; // Deduplicate
+  };
+
   if (loading) return <div className="p-10 text-center">Loading...</div>;
   if (!chapterData)
     return <div className="p-10 text-center">No data available</div>;
@@ -841,6 +877,14 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
             }
             if (block.type === "verse") {
               const verseId = `${bookMeta.id}-${chapterMeta.number}-${block.number}`;
+              const strongsWords = getStrongsWordsForVerse(
+                book,
+                chapter,
+                block.number, // Pass the verse number
+                block.content
+              );
+              console.log(strongsWord);
+
               return (
                 <span
                   data-verse={block.number}
@@ -852,6 +896,22 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
                     {block.number}
                   </sup>
                   {renderVerseContent(block.content)}{" "}
+                  {/* Strong's words inline */}
+                  {strongsWords.length > 0 &&
+                    strongsWords.map((word, idx) => (
+                      <span
+                        key={`${verseId}-strongs-${idx}`}
+                        className="text-[10px] font-semibold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 px-1 py-0.5 rounded ml-1 cursor-pointer"
+                        onClick={() => {
+                          setCurrentVerse(block.number);
+                          setStrongsWord(word);
+                          setIsStrongsOpen(true);
+                        }}
+                        title="View Strong's Info"
+                      >
+                        {word}
+                      </span>
+                    ))}
                 </span>
               );
             }
@@ -1077,6 +1137,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
         book={book}
         chapter={chapter}
         word={strongsWord || ""}
+        verse={currentVerse}
       />
     </div>
   );

@@ -53,6 +53,7 @@ type StrongsInfoModalProps = {
   book: string;
   chapter: number;
   word: string;
+  verseNumber: number;
 };
 
 export const StrongsInfoModal: React.FC<StrongsInfoModalProps> = ({

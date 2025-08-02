@@ -124,3 +124,165 @@
   }
 }
 --------------------------------------------------
+{
+  "timestamp": "2025-08-02T17:59:44.192421",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0
+  },
+  "cost": {
+    "input_cost_usd": 0.0,
+    "output_cost_usd": 0.0,
+    "total_cost_usd": 0.0
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T18:02:00.795989",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2913
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.013016,
+    "total_cost_usd": 0.015588
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T18:12:39.080524",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2919
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.013064,
+    "total_cost_usd": 0.015636
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T18:13:25.730310",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 3004
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.013744,
+    "total_cost_usd": 0.016316
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T18:14:49.123560",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "Spirit",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2933
+  },
+  "cost": {
+    "input_cost_usd": 0.002564,
+    "output_cost_usd": 0.013208,
+    "total_cost_usd": 0.015772
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T18:15:32.705760",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "spirit",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2742
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.011648,
+    "total_cost_usd": 0.01422
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T18:15:36.305413",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "spirit",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 3110
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.014592,
+    "total_cost_usd": 0.017164
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T18:15:45.087669",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "spirit",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2936
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.0132,
+    "total_cost_usd": 0.015772
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T18:16:23.086461",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "spirit",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2911
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.013,
+    "total_cost_usd": 0.015572
+  }
+}
+--------------------------------------------------

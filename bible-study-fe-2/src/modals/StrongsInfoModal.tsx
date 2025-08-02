@@ -65,6 +65,7 @@ type StrongsInfoModalProps = {
   book: string;
   chapter: number;
   word: string;
+  verse: number;
 };
 
 export const StrongsInfoModal: React.FC<StrongsInfoModalProps> = ({
@@ -73,6 +74,7 @@ export const StrongsInfoModal: React.FC<StrongsInfoModalProps> = ({
   book,
   chapter,
   word,
+  verse,
 }) => {
   const [data, setData] = useState<StrongsData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,8 +85,8 @@ export const StrongsInfoModal: React.FC<StrongsInfoModalProps> = ({
       if (!word.trim()) return;
 
       // Create a unique cache key
-      const cacheKey = `strongs-${book}-${chapter}-${word.toLowerCase()}`;
-
+      const cacheKey = `strongs-${book}-${chapter}-${verse}-${word.toLowerCase()}`;
+      console.log(cacheKey);
       // Try cached data first
       const cachedData = localStorage.getItem(cacheKey);
       if (cachedData) {
