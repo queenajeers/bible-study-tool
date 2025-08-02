@@ -1,0 +1,126 @@
+{
+  "timestamp": "2025-08-02T16:16:02.861352",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "light",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2755
+  },
+  "cost": {
+    "input_cost_usd": 0.002126,
+    "output_cost_usd": 0.013536,
+    "total_cost_usd": 0.015662
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T16:52:06.293738",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2895
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.012872,
+    "total_cost_usd": 0.015444
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T16:52:53.561778",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2890
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.012832,
+    "total_cost_usd": 0.015404
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T16:53:18.110085",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 3073
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.014296,
+    "total_cost_usd": 0.016868
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T16:53:59.342974",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2847
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.012488,
+    "total_cost_usd": 0.01506
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T16:55:09.077265",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "darkness",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2976
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.01352,
+    "total_cost_usd": 0.016092
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T17:01:50.602743",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "earth",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2806
+  },
+  "cost": {
+    "input_cost_usd": 0.002564,
+    "output_cost_usd": 0.012192,
+    "total_cost_usd": 0.014756
+  }
+}
+--------------------------------------------------

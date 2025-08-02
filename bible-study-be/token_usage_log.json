@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-08-02T16:00:36.691711",
+  "query": {
+    "book": "GEN",
+    "chapter": 1,
+    "word": "darkness",
+    "model": "openai/gpt-4.1",
+    "response_time_seconds": 22.963
+  },
+  "usage": {
+    "tokens": {
+      "input_tokens": 1068,
+      "output_tokens": 1678,
+      "total_tokens": 2746,
+      "estimated_input_tokens": 777,
+      "estimated_output_tokens": 1691
+    },
+    "costs": {
+      "input_cost": 0.002136,
+      "output_cost": 0.013424,
+      "total_cost": 0.01556
+    },
+    "pricing": { "input_rate_per_million": 2.0, "output_rate_per_million": 8.0 }
+  }
+}

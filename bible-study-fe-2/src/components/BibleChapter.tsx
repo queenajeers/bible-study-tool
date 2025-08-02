@@ -10,6 +10,7 @@ import { Info } from "lucide-react";
 import { SideModalLayout } from "../modals/SideModalLayout";
 import { VerseModalContent } from "../modals/VerseModalContent";
 import { ContextInfoModal } from "../modals/ContextInfoModal";
+import { StrongsInfoModal } from "../modals/StrongsInfoModal";
 
 type BibleChapterProps = {
   book: string;
@@ -119,6 +120,20 @@ const TOOLTIP_CONFIG = {
         context.handleInsightsForNewText(selectedRange, bookMeta, chapterMeta);
       },
     },
+    {
+      label: "Strong’s",
+      className: `${TOOLTIP_STYLES.textColor} ${TOOLTIP_STYLES.textHoverColor} font-medium transition-colors duration-150`,
+      onClick: (
+        selectedRange: SelectedRange | null,
+        bookMeta: any,
+        chapterMeta: any,
+        context: any
+      ) => {
+        if (selectedRange?.text?.split(/\s+/).length === 1) {
+          context.setStrongsModal(selectedRange.text);
+        }
+      },
+    },
   ],
   // Actions for highlighted text
   highlight: [
@@ -217,6 +232,9 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
   const [currentVerse, setCurrentVerse] = useState(0);
 
   const [isContextOpen, setIsContextOpen] = useState(false);
+
+  const [isStrongsOpen, setIsStrongsOpen] = useState(false);
+  const [strongsWord, setStrongsWord] = useState<string | null>(null);
 
   // Generate storage key for current chapter
   const getStorageKey = () => `bible-highlights-${version}-${book}-${chapter}`;
@@ -525,7 +543,8 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       if (viewportWidth >= 1024 && availableRightSpace >= notePanelWidth) {
         // Sidebar mode: Position in the right margin area
         x = contentRightEdge + padding;
-        y = rect.top - containerRect.top;
+        // Remove the offset - position directly at the verse top
+        y = rect.top;
         positionMode = "sidebar";
       } else {
         // Overlay mode: Position over content with smart positioning
@@ -544,7 +563,8 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
           x = Math.max(padding, (viewportWidth - notePanelWidth) / 2);
         }
 
-        y = rect.top - containerRect.top;
+        // Remove the offset - position directly at the verse top
+        y = rect.top;
       }
 
       // Ensure y position stays in viewport
@@ -558,6 +578,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
       if (y < padding) {
         y = padding;
       }
+
       setNotePanelPosition({ x, y, positionMode });
       setNotePanelVerseId(verseId);
     }
@@ -575,6 +596,10 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
     handleInsightsForAHighlight,
     containerRef,
     openStickyNote,
+    setStrongsModal: (word: string) => {
+      setStrongsWord(word);
+      setIsStrongsOpen(true);
+    },
   });
 
   useEffect(() => {
@@ -855,22 +880,32 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
             }}
           >
             <div className="flex items-center space-x-3 sm:space-x-6 whitespace-nowrap">
-              {TOOLTIP_CONFIG.selection.map((action, index) => (
-                <button
-                  key={index}
-                  className={`${action.className} px-1.5 py-1 sm:px-2 sm:py-1 rounded-md ${TOOLTIP_STYLES.hoverBackgroundColor} ${TOOLTIP_STYLES.activeBackgroundColor} text-xs sm:text-sm leading-5 whitespace-nowrap`}
-                  onClick={() =>
-                    action.onClick(
-                      selectedRange,
-                      bookMeta,
-                      chapterMeta,
-                      getActionContext()
-                    )
+              {TOOLTIP_CONFIG.selection
+                .filter((action) => {
+                  if (
+                    action.label === "Strong’s" &&
+                    selectedRange?.text?.split(/\s+/).length !== 1
+                  ) {
+                    return false;
                   }
-                >
-                  {action.label}
-                </button>
-              ))}
+                  return true;
+                })
+                .map((action, index) => (
+                  <button
+                    key={index}
+                    className={`${action.className} px-1.5 py-1 sm:px-2 sm:py-1 rounded-md ${TOOLTIP_STYLES.hoverBackgroundColor} ${TOOLTIP_STYLES.activeBackgroundColor} text-xs sm:text-sm leading-5 whitespace-nowrap`}
+                    onClick={() =>
+                      action.onClick(
+                        selectedRange,
+                        bookMeta,
+                        chapterMeta,
+                        getActionContext()
+                      )
+                    }
+                  >
+                    {action.label}
+                  </button>
+                ))}
             </div>
             {/* Tooltip arrow */}
             <div
@@ -1035,6 +1070,13 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
         onClose={() => setIsContextOpen(false)}
         book={book}
         chapter={chapter}
+      />
+      <StrongsInfoModal
+        isOpen={isStrongsOpen}
+        onClose={() => setIsStrongsOpen(false)}
+        book={book}
+        chapter={chapter}
+        word={strongsWord || ""}
       />
     </div>
   );
