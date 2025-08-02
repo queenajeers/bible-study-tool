@@ -206,16 +206,16 @@ Return this structured JSON response:
     }},
     "word_meanings": [
         {{
-            "meaning": "First main meaning/definition",
-            "explanation": "Simple 1-sentence explanation of this meaning",
-            "usage_type": "literal/figurative/metaphorical"
+            "meaning": "Literal or root meaning (e.g., 'to spread out')",
+            "explanation": "Explain this literal/root meaning and how it connects to how the word is used",
+            "usage_type": "literal"
         }},
         {{
-            "meaning": "Second meaning/definition/synonym",
-            "explanation": "Simple 1-sentence explanation",
-            "usage_type": "literal/figurative/metaphorical"
+            "meaning": "Another major meaning (e.g., 'sky, expanse')",
+            "explanation": "Explain this common meaning and how it builds on or diverges from the literal",
+            "usage_type": "figurative/metaphorical/theological/etc."
         }}
-        // Include 5-8 different meanings/definitions/synonyms
+        // Provide 5–8 meanings total, clearly distinguishing between literal and symbolic
     ],
     "verse_with_deeper_meaning": {{
         "original_verse": "The exact verse from {book} {chapter} where '{word}' appears",

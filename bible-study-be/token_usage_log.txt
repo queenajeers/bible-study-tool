@@ -286,3 +286,93 @@
   }
 }
 --------------------------------------------------
+{
+  "timestamp": "2025-08-02T19:10:53.400852",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "morning",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 3190
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.015232,
+    "total_cost_usd": 0.017804
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T19:16:27.500035",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "expanse",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 3308
+  },
+  "cost": {
+    "input_cost_usd": 0.002572,
+    "output_cost_usd": 0.016176,
+    "total_cost_usd": 0.018748
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T19:23:38.481744",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "evening",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 3101
+  },
+  "cost": {
+    "input_cost_usd": 0.002624,
+    "output_cost_usd": 0.014312,
+    "total_cost_usd": 0.016936
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T19:30:26.668590",
+  "function": "get_bible_chapter_intro",
+  "book": "GEN",
+  "chapter": 1,
+  "word": null,
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1079
+  },
+  "cost": {
+    "input_cost_usd": 0.001254,
+    "output_cost_usd": 0.003616,
+    "total_cost_usd": 0.00487
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T19:40:28.508521",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "dry",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 3161
+  },
+  "cost": {
+    "input_cost_usd": 0.002616,
+    "output_cost_usd": 0.014824,
+    "total_cost_usd": 0.01744
+  }
+}
+--------------------------------------------------

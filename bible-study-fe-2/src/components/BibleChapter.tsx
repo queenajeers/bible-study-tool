@@ -899,18 +899,20 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
                   {/* Strong's words inline */}
                   {strongsWords.length > 0 &&
                     strongsWords.map((word, idx) => (
-                      <span
+                      <button
                         key={`${verseId}-strongs-${idx}`}
-                        className="text-[10px] font-semibold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 px-1 py-0.5 rounded ml-1 cursor-pointer"
+                        className="text-xs font-semibold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 px-2 py-1 rounded ml-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         onClick={() => {
                           setCurrentVerse(block.number);
                           setStrongsWord(word);
                           setIsStrongsOpen(true);
                         }}
                         title="View Strong's Info"
+                        aria-label={`Strong's word: ${word}`}
+                        type="button"
                       >
-                        {word}
-                      </span>
+                        #{word}
+                      </button>
                     ))}
                 </span>
               );
