@@ -5,9 +5,6 @@ import logging
 import json
 from datetime import datetime
 
-
-
-
 load_dotenv()
 
 # Configure logging
@@ -19,8 +16,6 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-
-# Set up logging configuration
 
 def log_token_usage(function_name: str, book: str, chapter: int, word: str, token_data: dict, cost_data: dict):
     """Log token usage and cost information to a file."""
@@ -48,6 +43,24 @@ def log_token_usage(function_name: str, book: str, chapter: int, word: str, toke
     
     # Also log to console
     logging.info(f"{function_name} - Tokens: {token_data.get('total_tokens', 0)} | Cost: ${cost_data['total_cost_usd']:.6f}")
+
+def calculate_cost(input_tokens: int, output_tokens: int) -> dict:
+    """
+    Calculate cost based on OpenRouter pricing:
+    $2/M input tokens, $8/M output tokens
+    """
+    input_cost = (input_tokens / 1_000_000) * 2.0
+    output_cost = (output_tokens / 1_000_000) * 8.0
+    total_cost = input_cost + output_cost
+    
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": input_tokens + output_tokens,
+        "input_cost_usd": round(input_cost, 6),
+        "output_cost_usd": round(output_cost, 6),
+        "total_cost_usd": round(total_cost, 6)
+    }
 
 def get_bible_chapter_intro(book: str, chapter: int) -> dict:
     response = requests.post(
@@ -135,29 +148,10 @@ Chapter: **{book} {chapter}**
     
     return data["choices"][0]["message"]["content"]
 
-
-
-def calculate_cost(input_tokens: int, output_tokens: int) -> dict:
-    """
-    Calculate cost based on OpenRouter pricing:
-    $2/M input tokens, $8/M output tokens
-    """
-    input_cost = (input_tokens / 1_000_000) * 2.0
-    output_cost = (output_tokens / 1_000_000) * 8.0
-    total_cost = input_cost + output_cost
-    
-    return {
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "total_tokens": input_tokens + output_tokens,
-        "input_cost_usd": round(input_cost, 6),
-        "output_cost_usd": round(output_cost, 6),
-        "total_cost_usd": round(total_cost, 6)
-    }
-
 def get_strongs_word(book: str, chapter: int, word: str) -> dict:
     """
     Get comprehensive Strong's dictionary information for a specific word in a Bible chapter.
+    Redesigned with clean structure for beautiful frontend interface.
     
     Args:
         book (str): The Bible book name (e.g., "Genesis", "Matthew")
@@ -165,7 +159,7 @@ def get_strongs_word(book: str, chapter: int, word: str) -> dict:
         word (str): The specific word to analyze
     
     Returns:
-        dict: Comprehensive Strong's dictionary data optimized for frontend display
+        dict: Clean Strong's dictionary data optimized for frontend display
     """
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -179,178 +173,132 @@ def get_strongs_word(book: str, chapter: int, word: str) -> dict:
                 {
                     "role": "user",
                     "content": f"""
-You are a biblical scholar who explains Bible words in simple, clear English. Your goal is to help everyday Bible readers understand God's Word better by showing them the rich meaning behind the original Hebrew/Greek words.
+You are a biblical scholar specializing in Strong's Concordance analysis. Analyze the word "{word}" as it appears in {book} {chapter} and provide comprehensive Strong's information structured for a beautiful frontend interface.
 
-Analyze the word "{word}" as it appears in {book} {chapter} and provide comprehensive Strong's information that will be displayed in a user-friendly frontend interface.
-
-**CRITICAL INSTRUCTIONS:**
-- Use simple, everyday English that anyone can understand
-- Structure your response for optimal frontend display - think cards, highlights, and visual sections
-- Help users see the full richness of the original word
-- Make it encouraging and help people fall in love with God's Word
-- Find the exact verse in {book} {chapter} where "{word}" appears
+**INSTRUCTIONS:**
+- Use clear, simple English that anyone can understand
+- Structure response for optimal frontend display (think cards and visual sections)
+- Focus on the original language richness and biblical depth
+- Make it encouraging and help people love God's Word more
 
 Return this structured JSON response:
 
 {{
-    "word_analysis": {{
-        "english_word": "The English word being analyzed",
+    "original_language_info": {{
         "strongs_number": "The Strong's number (e.g., H1234 or G5678)",
-        "original_language": "Hebrew/Aramaic/Greek"
-    }},
-    "original_word": {{
+        "original_language": "Hebrew/Aramaic/Greek",
         "original_script": "The word in original Hebrew/Greek characters",
         "transliteration": "English transliteration (like 'bereshith')",
         "pronunciation": "Simple phonetic pronunciation guide (like 'beh-ray-SHEET')",
-        "pronunciation_audio_guide": "Very simple pronunciation like you'd tell a friend (like 'sounds like: berry-sheet')"
+        "pronunciation_guide": "Very simple pronunciation helper (like 'sounds like: berry-sheet')"
     }},
-    "word_meanings": [
+    "general_meanings": [
         {{
-            "meaning": "Literal or root meaning (e.g., 'to spread out')",
-            "explanation": "Explain this literal/root meaning and how it connects to how the word is used",
-            "usage_type": "literal"
+            "meaning": "Primary/literal meaning of the word",
+            "explanation": "Clear explanation of this meaning and its significance",
+            "usage_context": "When/how this meaning is typically used"
         }},
         {{
-            "meaning": "Another major meaning (e.g., 'sky, expanse')",
-            "explanation": "Explain this common meaning and how it builds on or diverges from the literal",
-            "usage_type": "figurative/metaphorical/theological/etc."
+            "meaning": "Secondary meaning",
+            "explanation": "Clear explanation of this meaning",
+            "usage_context": "Context where this meaning applies"
         }}
-        // Provide 5–8 meanings total, clearly distinguishing between literal and symbolic
+        // Include 4-6 different meanings/nuances of the word in its original language
     ],
-    "verse_with_deeper_meaning": {{
-        "original_verse": "The exact verse from {book} {chapter} where '{word}' appears",
-        "enhanced_reading": "The same verse but with the original word's richer meaning highlighted - make it clear which part should be highlighted for frontend",
-        "highlight_instruction": "Specific instruction for frontend on what to highlight (e.g., 'highlight: In the beginning' and replace with 'In the supreme start/origin')",
-        "meaning_explanation": "Simple explanation of why this deeper reading is more meaningful",
-        "figurative_note": "If applicable, note if this is figurative language and what it represents"
+    "contextual_meaning": {{
+        "verse_reference": "{book} {chapter}:verse where the word appears",
+        "verse_text": "The complete verse text",
+        "word_in_context": "How this specific Strong's word is translated in this verse",
+        "contextual_explanation": "What this word means specifically in this verse context",
+        "why_this_translation": "Brief explanation of why it was translated this way here",
+        "deeper_insight": "What this reveals about the verse's deeper meaning"
     }},
-    "related_verses": [
+    "biblical_usage_examples": [
         {{
             "verse_reference": "Book Chapter:Verse",
-            "verse_text": "The actual verse text",
-            "strongs_word_used": "How this same Strong's number appears in English here (might be translated differently)",
-            "highlight_instruction": "What word/phrase to highlight in this verse for frontend",
-            "context_usage": "Simple explanation: 'In this context, the word means...'",
-            "connection_insight": "How this usage connects back to and enriches the original verse in {book} {chapter}"
+            "verse_text": "Complete verse text",
+            "translated_as": "How the Strong's word appears in English here",
+            "meaning_used": "Which meaning/nuance of the word is used in this context",
+            "significance": "Short explanation of why this usage is significant or meaningful"
         }}
-        // Include 8-12 most relevant cross-references showing different translations of same Strong's number
-    ],
-    "practical_application": {{
-        "what_this_means_for_you": "Personal, relatable explanation of what this word means for daily Christian life",
-        "what_this_teaches_us": "What this word teaches us about God's character or spiritual truths",
-        "historical_context": "Simple explanation of the cultural/historical background that helps understand the word",
-        "how_to_apply_today": "Practical ways to apply this deeper understanding in modern Christian living"
-    }},
-    "final_thoughts": {{
-        "word_summary": "A rich summary of what makes this word special and meaningful",
-        "encouragement": "An encouraging sentence about how understanding this word enhances Bible reading and faith",
-        "key_takeaway": "One simple sentence the user should remember about this word"
-    }}
+        // Include exactly 7 verses that showcase different meanings and uses of this Strong's number
+    ]
 }}
 
 Word to analyze: "{word}" in {book} {chapter}
 
-Remember: Structure this for a beautiful, intuitive frontend where users can easily absorb the information without struggling with the UI. Think visual cards, highlighted text, and clear sections that flow naturally.
+Focus on creating a clean, structured response that will look beautiful in a modern web interface with clear sections and easy-to-read information.
 """
                 }
             ],
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
-                    "name": "enhanced_strongs_analysis",
+                    "name": "redesigned_strongs_analysis",
                     "strict": True,
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "word_analysis": {
+                            "original_language_info": {
                                 "type": "object",
                                 "properties": {
-                                    "english_word": {"type": "string"},
                                     "strongs_number": {"type": "string"},
-                                    "original_language": {"type": "string"}
-                                },
-                                "required": ["english_word", "strongs_number", "original_language"],
-                                "additionalProperties": False
-                            },
-                            "original_word": {
-                                "type": "object",
-                                "properties": {
+                                    "original_language": {"type": "string"},
                                     "original_script": {"type": "string"},
                                     "transliteration": {"type": "string"},
                                     "pronunciation": {"type": "string"},
-                                    "pronunciation_audio_guide": {"type": "string"}
+                                    "pronunciation_guide": {"type": "string"}
                                 },
-                                "required": ["original_script", "transliteration", "pronunciation", "pronunciation_audio_guide"],
+                                "required": ["strongs_number", "original_language", "original_script", "transliteration", "pronunciation", "pronunciation_guide"],
                                 "additionalProperties": False
                             },
-                            "word_meanings": {
+                            "general_meanings": {
                                 "type": "array",
                                 "items": {
                                     "type": "object",
                                     "properties": {
                                         "meaning": {"type": "string"},
                                         "explanation": {"type": "string"},
-                                        "usage_type": {"type": "string"}
+                                        "usage_context": {"type": "string"}
                                     },
-                                    "required": ["meaning", "explanation", "usage_type"],
+                                    "required": ["meaning", "explanation", "usage_context"],
                                     "additionalProperties": False
                                 },
-                                "minItems": 5,
-                                "maxItems": 8
+                                "minItems": 4,
+                                "maxItems": 6
                             },
-                            "verse_with_deeper_meaning": {
+                            "contextual_meaning": {
                                 "type": "object",
                                 "properties": {
-                                    "original_verse": {"type": "string"},
-                                    "enhanced_reading": {"type": "string"},
-                                    "highlight_instruction": {"type": "string"},
-                                    "meaning_explanation": {"type": "string"},
-                                    "figurative_note": {"type": "string"}
+                                    "verse_reference": {"type": "string"},
+                                    "verse_text": {"type": "string"},
+                                    "word_in_context": {"type": "string"},
+                                    "contextual_explanation": {"type": "string"},
+                                    "why_this_translation": {"type": "string"},
+                                    "deeper_insight": {"type": "string"}
                                 },
-                                "required": ["original_verse", "enhanced_reading", "highlight_instruction", "meaning_explanation", "figurative_note"],
+                                "required": ["verse_reference", "verse_text", "word_in_context", "contextual_explanation", "why_this_translation", "deeper_insight"],
                                 "additionalProperties": False
                             },
-                            "related_verses": {
+                            "biblical_usage_examples": {
                                 "type": "array",
                                 "items": {
                                     "type": "object",
                                     "properties": {
                                         "verse_reference": {"type": "string"},
                                         "verse_text": {"type": "string"},
-                                        "strongs_word_used": {"type": "string"},
-                                        "highlight_instruction": {"type": "string"},
-                                        "context_usage": {"type": "string"},
-                                        "connection_insight": {"type": "string"}
+                                        "translated_as": {"type": "string"},
+                                        "meaning_used": {"type": "string"},
+                                        "significance": {"type": "string"}
                                     },
-                                    "required": ["verse_reference", "verse_text", "strongs_word_used", "highlight_instruction", "context_usage", "connection_insight"],
+                                    "required": ["verse_reference", "verse_text", "translated_as", "meaning_used", "significance"],
                                     "additionalProperties": False
                                 },
-                                "minItems": 8,
-                                "maxItems": 12
-                            },
-                            "practical_application": {
-                                "type": "object",
-                                "properties": {
-                                    "what_this_means_for_you": {"type": "string"},
-                                    "what_this_teaches_us": {"type": "string"},
-                                    "historical_context": {"type": "string"},
-                                    "how_to_apply_today": {"type": "string"}
-                                },
-                                "required": ["what_this_means_for_you", "what_this_teaches_us", "historical_context", "how_to_apply_today"],
-                                "additionalProperties": False
-                            },
-                            "final_thoughts": {
-                                "type": "object",
-                                "properties": {
-                                    "word_summary": {"type": "string"},
-                                    "encouragement": {"type": "string"},
-                                    "key_takeaway": {"type": "string"}
-                                },
-                                "required": ["word_summary", "encouragement", "key_takeaway"],
-                                "additionalProperties": False
+                                "minItems": 7,
+                                "maxItems": 7
                             }
                         },
-                        "required": ["word_analysis", "original_word", "word_meanings", "verse_with_deeper_meaning", "related_verses", "practical_application", "final_thoughts"],
+                        "required": ["original_language_info", "general_meanings", "contextual_meaning", "biblical_usage_examples"],
                         "additionalProperties": False
                     }
                 }

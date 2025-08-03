@@ -376,3 +376,255 @@
   }
 }
 --------------------------------------------------
+{
+  "timestamp": "2025-08-02T20:45:04.199363",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "God",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0
+  },
+  "cost": {
+    "input_cost_usd": 0.0,
+    "output_cost_usd": 0.0,
+    "total_cost_usd": 0.0
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T20:46:26.536480",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "God",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1992
+  },
+  "cost": {
+    "input_cost_usd": 0.0017,
+    "output_cost_usd": 0.009136,
+    "total_cost_usd": 0.010836
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T20:50:50.861321",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "earth",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1863
+  },
+  "cost": {
+    "input_cost_usd": 0.0017,
+    "output_cost_usd": 0.008104,
+    "total_cost_usd": 0.009804
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T20:58:41.665928",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "God",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1963
+  },
+  "cost": {
+    "input_cost_usd": 0.0017,
+    "output_cost_usd": 0.008904,
+    "total_cost_usd": 0.010604
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T21:03:22.262940",
+  "function": "get_strongs_word",
+  "book": "GEN",
+  "chapter": 1,
+  "word": "void",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2073
+  },
+  "cost": {
+    "input_cost_usd": 0.0017,
+    "output_cost_usd": 0.009784,
+    "total_cost_usd": 0.011484
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T21:13:04.263167",
+  "function": "get_bible_chapter_intro",
+  "book": "PSA",
+  "chapter": 1,
+  "word": null,
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1212
+  },
+  "cost": {
+    "input_cost_usd": 0.001258,
+    "output_cost_usd": 0.004664,
+    "total_cost_usd": 0.005922
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T21:17:33.568686",
+  "function": "get_strongs_word",
+  "book": "EPH",
+  "chapter": 5,
+  "word": "Submit",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1914
+  },
+  "cost": {
+    "input_cost_usd": 0.001706,
+    "output_cost_usd": 0.008488,
+    "total_cost_usd": 0.010194
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T21:57:37.040844",
+  "function": "get_strongs_word",
+  "book": "EPH",
+  "chapter": 5,
+  "word": "cleansing",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2052
+  },
+  "cost": {
+    "input_cost_usd": 0.00171,
+    "output_cost_usd": 0.009576,
+    "total_cost_usd": 0.011286
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T22:06:26.896519",
+  "function": "get_strongs_word",
+  "book": "EPH",
+  "chapter": 5,
+  "word": "hated",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1996
+  },
+  "cost": {
+    "input_cost_usd": 0.00171,
+    "output_cost_usd": 0.009128,
+    "total_cost_usd": 0.010838
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T22:07:01.033687",
+  "function": "get_strongs_word",
+  "book": "EPH",
+  "chapter": 5,
+  "word": "nourishes",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2005
+  },
+  "cost": {
+    "input_cost_usd": 0.001714,
+    "output_cost_usd": 0.009184,
+    "total_cost_usd": 0.010898
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T22:08:01.381104",
+  "function": "get_strongs_word",
+  "book": "EPH",
+  "chapter": 5,
+  "word": "united",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2101
+  },
+  "cost": {
+    "input_cost_usd": 0.00171,
+    "output_cost_usd": 0.009968,
+    "total_cost_usd": 0.011678
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T22:08:44.955400",
+  "function": "get_strongs_word",
+  "book": "EPH",
+  "chapter": 5,
+  "word": "one",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1975
+  },
+  "cost": {
+    "input_cost_usd": 0.001706,
+    "output_cost_usd": 0.008976,
+    "total_cost_usd": 0.010682
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T23:16:48.527086",
+  "function": "get_bible_chapter_intro",
+  "book": "EPH",
+  "chapter": 5,
+  "word": null,
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1163
+  },
+  "cost": {
+    "input_cost_usd": 0.001258,
+    "output_cost_usd": 0.004272,
+    "total_cost_usd": 0.00553
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-02T23:22:56.197208",
+  "function": "get_strongs_word",
+  "book": "EPH",
+  "chapter": 5,
+  "word": "glorious",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 2064
+  },
+  "cost": {
+    "input_cost_usd": 0.00171,
+    "output_cost_usd": 0.009672,
+    "total_cost_usd": 0.011382
+  }
+}
+--------------------------------------------------
