@@ -1,0 +1,168 @@
+2025-08-03 17:11:49,634 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:18:55,722 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:19:48,459 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:22:51,808 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:25:37,953 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:38:53,505 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:39:51,469 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:40:42,461 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:43:35,728 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:44:09,858 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:53:53,825 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:54:15,227 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 17:57:38,391 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:08:59,876 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:09:09,315 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:09:45,138 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:17:02,409 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:17:45,710 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:18:09,471 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:23:50,281 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:24:23,027 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:37:37,154 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:38:33,778 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:42:49,270 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:42:59,992 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,029 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,029 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,059 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,060 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,091 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,092 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,122 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,124 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,172 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,173 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,201 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,202 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,268 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,268 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,268 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,269 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,320 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,321 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,371 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,372 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,414 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,415 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,454 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,455 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,500 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,501 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,519 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,520 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,568 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,569 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,586 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,587 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,603 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,603 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,632 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,633 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,705 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,706 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,785 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,786 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,827 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,829 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,859 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,859 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,882 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,883 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,925 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,927 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,945 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:00,946 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,008 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,009 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,045 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,045 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,074 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,075 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,105 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,107 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,138 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,140 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,215 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,217 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,310 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,311 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,368 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,370 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,392 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,393 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,436 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,438 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,460 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,462 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,494 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,495 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,529 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,531 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,559 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,560 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,598 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,599 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,682 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,683 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,789 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,791 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,856 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,856 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,875 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,876 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,917 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:01,919 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,016 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,019 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,152 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,154 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,169 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,171 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,205 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,207 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,236 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,238 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,283 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,285 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,376 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,378 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,429 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,430 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,480 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,482 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,520 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,522 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,543 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,544 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,610 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,611 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,612 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,613 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,649 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,652 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,671 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,672 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,696 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,698 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,728 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,729 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,756 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,760 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,785 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,786 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,837 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,838 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,859 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,861 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,886 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,888 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,930 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,932 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,933 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,939 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:02,939 - WARNING - socket.send() raised exception.
+2025-08-03 18:43:08,214 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:49:28,224 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:50:47,277 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-08-03 18:55:38,202 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"

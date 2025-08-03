@@ -628,3 +628,93 @@
   }
 }
 --------------------------------------------------
+{
+  "timestamp": "2025-08-03T15:43:11.379450",
+  "function": "get_bible_chapter_intro",
+  "book": "LEV",
+  "chapter": 2,
+  "word": null,
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1165
+  },
+  "cost": {
+    "input_cost_usd": 0.001254,
+    "output_cost_usd": 0.004304,
+    "total_cost_usd": 0.005558
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-03T15:45:30.839738",
+  "function": "get_bible_chapter_intro",
+  "book": "LEV",
+  "chapter": 3,
+  "word": null,
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1140
+  },
+  "cost": {
+    "input_cost_usd": 0.001254,
+    "output_cost_usd": 0.004104,
+    "total_cost_usd": 0.005358
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-03T15:45:40.812327",
+  "function": "get_bible_chapter_intro",
+  "book": "LEV",
+  "chapter": 4,
+  "word": null,
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1274
+  },
+  "cost": {
+    "input_cost_usd": 0.001254,
+    "output_cost_usd": 0.005176,
+    "total_cost_usd": 0.00643
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-03T15:48:16.835658",
+  "function": "get_strongs_word",
+  "book": "JHN",
+  "chapter": 14,
+  "word": "Me",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1952
+  },
+  "cost": {
+    "input_cost_usd": 0.001706,
+    "output_cost_usd": 0.008792,
+    "total_cost_usd": 0.010498
+  }
+}
+--------------------------------------------------
+{
+  "timestamp": "2025-08-03T15:50:27.240884",
+  "function": "get_strongs_word",
+  "book": "JHN",
+  "chapter": 14,
+  "word": "known",
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 1781
+  },
+  "cost": {
+    "input_cost_usd": 0.001706,
+    "output_cost_usd": 0.007424,
+    "total_cost_usd": 0.00913
+  }
+}
+--------------------------------------------------

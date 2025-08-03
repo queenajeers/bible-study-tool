@@ -1,0 +1,303 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2820
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red89\green138\blue67;\red24\green24\blue24;\red193\green193\blue193;
+\red183\green111\blue179;\red67\green192\blue160;\red70\green137\blue204;\red212\green214\blue154;\red140\green211\blue254;
+\red202\green202\blue202;\red66\green179\blue255;\red194\green126\blue101;\red167\green197\blue152;\red205\green173\blue106;
+}
+{\*\expandedcolortbl;;\cssrgb\c41569\c60000\c33333;\cssrgb\c12157\c12157\c12157;\cssrgb\c80000\c80000\c80000;
+\cssrgb\c77255\c52549\c75294;\cssrgb\c30588\c78824\c69020;\cssrgb\c33725\c61176\c83922;\cssrgb\c86275\c86275\c66667;\cssrgb\c61176\c86275\c99608;
+\cssrgb\c83137\c83137\c83137;\cssrgb\c30980\c75686\c100000;\cssrgb\c80784\c56863\c47059;\cssrgb\c70980\c80784\c65882;\cssrgb\c84314\c72941\c49020;
+}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 # services/bible_service.py\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 import\cf4 \strokec4  \cf6 \strokec6 json\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5 from\cf4 \strokec4  \cf6 \strokec6 typing\cf4 \strokec4  \cf5 \strokec5 import\cf4 \strokec4  \cf6 \strokec6 AsyncGenerator\cf4 \strokec4 , \cf6 \strokec6 Dict\cf4 \strokec4 , \cf6 \strokec6 Any\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5 from\cf4 \strokec4  \cf6 \strokec6 openai\cf4 \strokec4  \cf5 \strokec5 import\cf4 \strokec4  \cf6 \strokec6 OpenAI\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5 from\cf4 \strokec4  \cf6 \strokec6 config\cf4 \strokec4  \cf5 \strokec5 import\cf4 \strokec4  \cf6 \strokec6 Config\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5 from\cf4 \strokec4  \cf6 \strokec6 models\cf4 \strokec4 .\cf6 \strokec6 schemas\cf4 \strokec4  \cf5 \strokec5 import\cf4 \strokec4  \cf6 \strokec6 ChapterIntro\cf4 \strokec4 , \cf6 \strokec6 StrongsAnalysis\cf4 \cb1 \strokec4 \
+\cf5 \cb3 \strokec5 from\cf4 \strokec4  \cf6 \strokec6 services\cf4 \strokec4 .\cf6 \strokec6 logging_service\cf4 \strokec4  \cf5 \strokec5 import\cf4 \strokec4  \cf6 \strokec6 LoggingService\cf4 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf7 \cb3 \strokec7 class\cf4 \strokec4  \cf6 \strokec6 BibleService\cf4 \strokec4 :\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3     \cf7 \strokec7 def\cf4 \strokec4  \cf8 \strokec8 __init__\cf4 \strokec4 (\cf9 \strokec9 self\cf4 \strokec4 ):\cb1 \
+\cb3         \cf9 \strokec9 self\cf4 \strokec4 .\cf9 \strokec9 client\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf6 \strokec6 OpenAI\cf4 \strokec4 (\cf9 \strokec9 api_key\cf10 \strokec10 =\cf6 \strokec6 Config\cf4 \strokec4 .\cf9 \strokec9 OPENAI_API_KEY\cf4 \strokec4 )\cb1 \
+\cb3         \cf9 \strokec9 self\cf4 \strokec4 .\cf9 \strokec9 logging_service\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf6 \strokec6 LoggingService\cf4 \strokec4 ()\cb1 \
+\
+\cb3     \cf7 \strokec7 async\cf4 \strokec4  \cf7 \strokec7 def\cf4 \strokec4  \cf8 \strokec8 get_chapter_intro_stream\cf4 \strokec4 (\cf9 \strokec9 self\cf4 \strokec4 , \cf9 \strokec9 book\cf4 \strokec4 : \cf6 \strokec6 str\cf4 \strokec4 , \cf9 \strokec9 chapter\cf4 \strokec4 : \cf6 \strokec6 int\cf4 \strokec4 ) -> \cf6 \strokec6 AsyncGenerator\cf4 \strokec4 [\cf6 \strokec6 str\cf4 \strokec4 , \cf11 \strokec11 None\cf4 \strokec4 ]:\cb1 \
+\cb3         \cf12 \strokec12 """Stream chapter introduction with structured output."""\cf4 \cb1 \strokec4 \
+\cb3         \cb1 \
+\cb3         \cf9 \strokec9 messages\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  [\cb1 \
+\cb3             \{\cb1 \
+\cb3                 \cf12 \strokec12 "role"\cf4 \strokec4 : \cf12 \strokec12 "user"\cf4 \strokec4 ,\cb1 \
+\cb3                 \cf12 \strokec12 "content"\cf4 \strokec4 : \cf7 \strokec7 f\cf12 \strokec12 """\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf12 \cb3 \strokec12 You are a faithful biblical scholar and devoted guide helping someone understand the sacred richness of **\cf7 \strokec7 \{\cf9 \strokec9 book\cf7 \strokec7 \}\cf12 \strokec12  \cf7 \strokec7 \{\cf9 \strokec9 chapter\cf7 \strokec7 \}\cf12 \strokec12 **. Your goal is to provide reverent cultural context and spiritual insights that make God's Word more meaningful and accessible, especially addressing any difficult or challenging passages that modern readers might struggle with, inviting deeper exploration of His truth even in hard-to-understand verses.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 Create a warm, faith-affirming introduction that says "Here's what will help God's Word come alive for you in this chapter."\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 Return this structured response:\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 1. **MainHeading**: A thoughtful, engaging title (6\'9610 words) that captures the chapter's essence and addresses any challenging content. If the chapter contains difficult passages, craft a heading that acknowledges the complexity while remaining faith-affirming. Think: "Understanding God's Heart in Hard Passages" or "Ancient Laws, Eternal Love" - informative but pastorally sensitive.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 2. **TimelineInfo**: The historical period (e.g., "c. 1000\'96960 BCE") with brief context if helpful.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 3. **Paras**: Create exactly 4 sections that gently guide understanding:\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12    **Cultural Context**: Explain the historical and cultural backdrop that God was working within. What customs, beliefs, or social structures help us understand how the Lord was moving among His people? Help readers see God's providence through the lens of ancient times while honoring the divine inspiration of Scripture.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12    **What Might Seem Strange**: Acknowledge elements that modern readers might find unfamiliar or difficult to understand, while affirming that God's Word is perfect and timeless. Pay special attention to passages that may seem challenging to contemporary readers (like laws about slavery, violence, or ancient customs). Gently explain how these difficult passages reveal God's character, His progressive revelation, and His work within the cultural context of the time, helping readers understand the deeper spiritual truths without compromising biblical authority.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12    **Key Insights to Watch For**: Point out 2-3 meaningful spiritual themes, divine patterns, or biblical truths that emerge in this chapter. Help readers recognize God's hand at work and understand what the Holy Spirit wants them to discover. Create anticipation for spiritual growth and deeper faith.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12    **Why This Matters Today**: Connect the chapter's divine wisdom to contemporary Christian life. What eternal truths, spiritual lessons, or insights about God's character can speak to believers today? Invite personal reflection on how God's Word applies to their walk with Him.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 Use warm, reverent language that feels like a faithful pastor or Bible teacher sharing God's truth with love. Be scholarly but deeply respectful of Scripture's divine inspiration. Create genuine spiritual curiosity and hunger for God's Word through faithful exposition and biblical insight.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 Chapter: **\cf7 \strokec7 \{\cf9 \strokec9 book\cf7 \strokec7 \}\cf12 \strokec12  \cf7 \strokec7 \{\cf9 \strokec9 chapter\cf7 \strokec7 \}\cf12 \strokec12 **\cf4 \cb1 \strokec4 \
+\cf12 \cb3 \strokec12 """\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3             \}\cb1 \
+\cb3         ]\cb1 \
+\
+\cb3         \cf5 \strokec5 try\cf4 \strokec4 :\cb1 \
+\cb3             \cf2 \strokec2 # Create streaming response\cf4 \cb1 \strokec4 \
+\cb3             \cf9 \strokec9 stream\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf9 \strokec9 self\cf4 \strokec4 .\cf9 \strokec9 client\cf4 \strokec4 .\cf9 \strokec9 chat\cf4 \strokec4 .\cf9 \strokec9 completions\cf4 \strokec4 .\cf8 \strokec8 create\cf4 \strokec4 (\cb1 \
+\cb3                 \cf9 \strokec9 model\cf10 \strokec10 =\cf12 \strokec12 "gpt-4o-mini"\cf4 \strokec4 ,\cb1 \
+\cb3                 \cf9 \strokec9 messages\cf10 \strokec10 =\cf9 \strokec9 messages\cf4 \strokec4 ,\cb1 \
+\cb3                 \cf9 \strokec9 response_format\cf10 \strokec10 =\cf4 \strokec4 \{\cb1 \
+\cb3                     \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "json_schema"\cf4 \strokec4 ,\cb1 \
+\cb3                     \cf12 \strokec12 "json_schema"\cf4 \strokec4 : \{\cb1 \
+\cb3                         \cf12 \strokec12 "name"\cf4 \strokec4 : \cf12 \strokec12 "chapter_intro"\cf4 \strokec4 ,\cb1 \
+\cb3                         \cf12 \strokec12 "strict"\cf4 \strokec4 : \cf11 \strokec11 True\cf4 \strokec4 ,\cb1 \
+\cb3                         \cf12 \strokec12 "schema"\cf4 \strokec4 : \{\cb1 \
+\cb3                             \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "object"\cf4 \strokec4 ,\cb1 \
+\cb3                             \cf12 \strokec12 "properties"\cf4 \strokec4 : \{\cb1 \
+\cb3                                 \cf12 \strokec12 "MainHeading"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                 \cf12 \strokec12 "TimelineInfo"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                 \cf12 \strokec12 "Paras"\cf4 \strokec4 : \{\cb1 \
+\cb3                                     \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "array"\cf4 \strokec4 ,\cb1 \
+\cb3                                     \cf12 \strokec12 "items"\cf4 \strokec4 : \{\cb1 \
+\cb3                                         \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "object"\cf4 \strokec4 ,\cb1 \
+\cb3                                         \cf12 \strokec12 "properties"\cf4 \strokec4 : \{\cb1 \
+\cb3                                             \cf12 \strokec12 "title"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                             \cf12 \strokec12 "content"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \}\cb1 \
+\cb3                                         \},\cb1 \
+\cb3                                         \cf12 \strokec12 "required"\cf4 \strokec4 : [\cf12 \strokec12 "title"\cf4 \strokec4 , \cf12 \strokec12 "content"\cf4 \strokec4 ],\cb1 \
+\cb3                                         \cf12 \strokec12 "additionalProperties"\cf4 \strokec4 : \cf11 \strokec11 False\cf4 \cb1 \strokec4 \
+\cb3                                     \},\cb1 \
+\cb3                                     \cf12 \strokec12 "minItems"\cf4 \strokec4 : \cf13 \strokec13 4\cf4 \strokec4 ,\cb1 \
+\cb3                                     \cf12 \strokec12 "maxItems"\cf4 \strokec4 : \cf13 \strokec13 4\cf4 \cb1 \strokec4 \
+\cb3                                 \}\cb1 \
+\cb3                             \},\cb1 \
+\cb3                             \cf12 \strokec12 "required"\cf4 \strokec4 : [\cf12 \strokec12 "MainHeading"\cf4 \strokec4 , \cf12 \strokec12 "TimelineInfo"\cf4 \strokec4 , \cf12 \strokec12 "Paras"\cf4 \strokec4 ],\cb1 \
+\cb3                             \cf12 \strokec12 "additionalProperties"\cf4 \strokec4 : \cf11 \strokec11 False\cf4 \cb1 \strokec4 \
+\cb3                         \}\cb1 \
+\cb3                     \}\cb1 \
+\cb3                 \},\cb1 \
+\cb3                 \cf9 \strokec9 stream\cf10 \strokec10 =\cf11 \strokec11 True\cf4 \cb1 \strokec4 \
+\cb3             )\cb1 \
+\
+\cb3             \cf9 \strokec9 accumulated_content\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf12 \strokec12 ""\cf4 \cb1 \strokec4 \
+\cb3             \cf9 \strokec9 usage_data\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \{\}\cb1 \
+\
+\cb3             \cf2 \strokec2 # Process the streaming response correctly\cf4 \cb1 \strokec4 \
+\cb3             \cf5 \strokec5 for\cf4 \strokec4  \cf9 \strokec9 chunk\cf4 \strokec4  \cf5 \strokec5 in\cf4 \strokec4  \cf9 \strokec9 stream\cf4 \strokec4 :\cb1 \
+\cb3                 \cf5 \strokec5 if\cf4 \strokec4  \cf9 \strokec9 chunk\cf4 \strokec4 .choices[\cf13 \strokec13 0\cf4 \strokec4 ].delta.content:\cb1 \
+\cb3                     \cf9 \strokec9 content_chunk\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf9 \strokec9 chunk\cf4 \strokec4 .choices[\cf13 \strokec13 0\cf4 \strokec4 ].delta.content\cb1 \
+\cb3                     \cf9 \strokec9 accumulated_content\cf4 \strokec4  \cf10 \strokec10 +=\cf4 \strokec4  \cf9 \strokec9 content_chunk\cf4 \cb1 \strokec4 \
+\cb3                     \cb1 \
+\cb3                     \cf2 \strokec2 # Yield the chunk for real-time streaming\cf4 \cb1 \strokec4 \
+\cb3                     \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'content'\cf4 \strokec4 , \cf12 \strokec12 'data'\cf4 \strokec4 : \cf9 \strokec9 content_chunk\cf4 \strokec4 \})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\
+\cb3                 \cf2 \strokec2 # Capture usage data from the final chunk\cf4 \cb1 \strokec4 \
+\cb3                 \cf5 \strokec5 if\cf4 \strokec4  \cf8 \strokec8 hasattr\cf4 \strokec4 (\cf9 \strokec9 chunk\cf4 \strokec4 , \cf12 \strokec12 'usage'\cf4 \strokec4 ) \cf7 \strokec7 and\cf4 \strokec4  \cf9 \strokec9 chunk\cf4 \strokec4 .usage:\cb1 \
+\cb3                     \cf9 \strokec9 usage_data\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \{\cb1 \
+\cb3                         \cf12 \strokec12 "prompt_tokens"\cf4 \strokec4 : \cf9 \strokec9 chunk\cf4 \strokec4 .usage.prompt_tokens,\cb1 \
+\cb3                         \cf12 \strokec12 "completion_tokens"\cf4 \strokec4 : \cf9 \strokec9 chunk\cf4 \strokec4 .usage.completion_tokens,\cb1 \
+\cb3                         \cf12 \strokec12 "total_tokens"\cf4 \strokec4 : \cf9 \strokec9 chunk\cf4 \strokec4 .usage.total_tokens\cb1 \
+\cb3                     \}\cb1 \
+\
+\cb3             \cf2 \strokec2 # Parse and validate the complete response\cf4 \cb1 \strokec4 \
+\cb3             \cf5 \strokec5 try\cf4 \strokec4 :\cb1 \
+\cb3                 \cf9 \strokec9 parsed_content\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 loads\cf4 \strokec4 (\cf9 \strokec9 accumulated_content\cf4 \strokec4 )\cb1 \
+\cb3                 \cf9 \strokec9 validated_intro\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf6 \strokec6 ChapterIntro\cf4 \strokec4 (\cf10 \strokec10 **\cf9 \strokec9 parsed_content\cf4 \strokec4 )\cb1 \
+\cb3                 \cb1 \
+\cb3                 \cf2 \strokec2 # Log usage if available\cf4 \cb1 \strokec4 \
+\cb3                 \cf5 \strokec5 if\cf4 \strokec4  \cf9 \strokec9 usage_data\cf4 \strokec4 :\cb1 \
+\cb3                     \cf9 \strokec9 cost_data\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf9 \strokec9 self\cf4 \strokec4 .\cf9 \strokec9 logging_service\cf4 \strokec4 .\cf8 \strokec8 calculate_cost\cf4 \strokec4 (\cb1 \
+\cb3                         \cf9 \strokec9 usage_data\cf4 \strokec4 .\cf8 \strokec8 get\cf4 \strokec4 (\cf12 \strokec12 "prompt_tokens"\cf4 \strokec4 , \cf13 \strokec13 0\cf4 \strokec4 ),\cb1 \
+\cb3                         \cf9 \strokec9 usage_data\cf4 \strokec4 .\cf8 \strokec8 get\cf4 \strokec4 (\cf12 \strokec12 "completion_tokens"\cf4 \strokec4 , \cf13 \strokec13 0\cf4 \strokec4 )\cb1 \
+\cb3                     )\cb1 \
+\cb3                     \cf9 \strokec9 self\cf4 \strokec4 .\cf9 \strokec9 logging_service\cf4 \strokec4 .\cf8 \strokec8 log_token_usage\cf4 \strokec4 (\cb1 \
+\cb3                         \cf12 \strokec12 "get_chapter_intro_stream"\cf4 \strokec4 , \cf9 \strokec9 book\cf4 \strokec4 , \cf9 \strokec9 chapter\cf4 \strokec4 , \cf11 \strokec11 None\cf4 \strokec4 , \cf9 \strokec9 usage_data\cf4 \strokec4 , \cf9 \strokec9 cost_data\cf4 \cb1 \strokec4 \
+\cb3                     )\cb1 \
+\
+\cb3                 \cf2 \strokec2 # Send completion signal with validated data\cf4 \cb1 \strokec4 \
+\cb3                 \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'complete'\cf4 \strokec4 , \cf12 \strokec12 'data'\cf4 \strokec4 : \cf9 \strokec9 validated_intro\cf4 \strokec4 .\cf8 \strokec8 model_dump\cf4 \strokec4 ()\})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\cb3                 \cb1 \
+\cb3             \cf5 \strokec5 except\cf4 \strokec4  \cf6 \strokec6 json\cf4 \strokec4 .\cf6 \strokec6 JSONDecodeError\cf4 \strokec4  \cf5 \strokec5 as\cf4 \strokec4  \cf9 \strokec9 e\cf4 \strokec4 :\cb1 \
+\cb3                 \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'error'\cf4 \strokec4 , \cf12 \strokec12 'message'\cf4 \strokec4 : \cf7 \strokec7 f\cf12 \strokec12 'JSON parsing error: \cf7 \strokec7 \{\cf6 \strokec6 str\cf4 \strokec4 (\cf9 \strokec9 e\cf4 \strokec4 )\cf7 \strokec7 \}\cf12 \strokec12 '\cf4 \strokec4 \})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\cb3             \cf5 \strokec5 except\cf4 \strokec4  \cf6 \strokec6 Exception\cf4 \strokec4  \cf5 \strokec5 as\cf4 \strokec4  \cf9 \strokec9 e\cf4 \strokec4 :\cb1 \
+\cb3                 \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'error'\cf4 \strokec4 , \cf12 \strokec12 'message'\cf4 \strokec4 : \cf7 \strokec7 f\cf12 \strokec12 'Validation error: \cf7 \strokec7 \{\cf6 \strokec6 str\cf4 \strokec4 (\cf9 \strokec9 e\cf4 \strokec4 )\cf7 \strokec7 \}\cf12 \strokec12 '\cf4 \strokec4 \})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\
+\cb3         \cf5 \strokec5 except\cf4 \strokec4  \cf6 \strokec6 Exception\cf4 \strokec4  \cf5 \strokec5 as\cf4 \strokec4  \cf9 \strokec9 e\cf4 \strokec4 :\cb1 \
+\cb3             \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'error'\cf4 \strokec4 , \cf12 \strokec12 'message'\cf4 \strokec4 : \cf7 \strokec7 f\cf12 \strokec12 'API error: \cf7 \strokec7 \{\cf6 \strokec6 str\cf4 \strokec4 (\cf9 \strokec9 e\cf4 \strokec4 )\cf7 \strokec7 \}\cf12 \strokec12 '\cf4 \strokec4 \})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\
+\cb3     \cf7 \strokec7 async\cf4 \strokec4  \cf7 \strokec7 def\cf4 \strokec4  \cf8 \strokec8 get_strongs_analysis_stream\cf4 \strokec4 (\cf9 \strokec9 self\cf4 \strokec4 , \cf9 \strokec9 book\cf4 \strokec4 : \cf6 \strokec6 str\cf4 \strokec4 , \cf9 \strokec9 chapter\cf4 \strokec4 : \cf6 \strokec6 int\cf4 \strokec4 , \cf9 \strokec9 word\cf4 \strokec4 : \cf6 \strokec6 str\cf4 \strokec4 ) -> \cf6 \strokec6 AsyncGenerator\cf4 \strokec4 [\cf6 \strokec6 str\cf4 \strokec4 , \cf11 \strokec11 None\cf4 \strokec4 ]:\cb1 \
+\cb3         \cf12 \strokec12 """Stream Strong's analysis with structured output."""\cf4 \cb1 \strokec4 \
+\cb3         \cb1 \
+\cb3         \cf9 \strokec9 messages\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  [\cb1 \
+\cb3             \{\cb1 \
+\cb3                 \cf12 \strokec12 "role"\cf4 \strokec4 : \cf12 \strokec12 "user"\cf4 \strokec4 ,\cb1 \
+\cb3                 \cf12 \strokec12 "content"\cf4 \strokec4 : \cf7 \strokec7 f\cf12 \strokec12 """\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf12 \cb3 \strokec12 You are a biblical scholar specializing in Strong's Concordance analysis. Analyze the word "\cf7 \strokec7 \{\cf9 \strokec9 word\cf7 \strokec7 \}\cf12 \strokec12 " as it appears in \cf7 \strokec7 \{\cf9 \strokec9 book\cf7 \strokec7 \}\cf12 \strokec12  \cf7 \strokec7 \{\cf9 \strokec9 chapter\cf7 \strokec7 \}\cf12 \strokec12  and provide comprehensive Strong's information structured for a beautiful frontend interface.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 **INSTRUCTIONS:**\cf4 \cb1 \strokec4 \
+\cf12 \cb3 \strokec12 - Use clear, simple English that anyone can understand\cf4 \cb1 \strokec4 \
+\cf12 \cb3 \strokec12 - Structure response for optimal frontend display (think cards and visual sections)\cf4 \cb1 \strokec4 \
+\cf12 \cb3 \strokec12 - Focus on the original language richness and biblical depth\cf4 \cb1 \strokec4 \
+\cf12 \cb3 \strokec12 - Make it encouraging and help people love God's Word more\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 Return this structured JSON response with the exact schema provided.\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 Word to analyze: "\cf7 \strokec7 \{\cf9 \strokec9 word\cf7 \strokec7 \}\cf12 \strokec12 " in \cf7 \strokec7 \{\cf9 \strokec9 book\cf7 \strokec7 \}\cf12 \strokec12  \cf7 \strokec7 \{\cf9 \strokec9 chapter\cf7 \strokec7 \}\cf4 \cb1 \strokec4 \
+\
+\cf12 \cb3 \strokec12 Focus on creating a clean, structured response that will look beautiful in a modern web interface with clear sections and easy-to-read information.\cf4 \cb1 \strokec4 \
+\cf12 \cb3 \strokec12 """\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3             \}\cb1 \
+\cb3         ]\cb1 \
+\
+\cb3         \cf5 \strokec5 try\cf4 \strokec4 :\cb1 \
+\cb3             \cf2 \strokec2 # Create streaming response\cf4 \cb1 \strokec4 \
+\cb3             \cf9 \strokec9 stream\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf9 \strokec9 self\cf4 \strokec4 .\cf9 \strokec9 client\cf4 \strokec4 .\cf9 \strokec9 chat\cf4 \strokec4 .\cf9 \strokec9 completions\cf4 \strokec4 .\cf8 \strokec8 create\cf4 \strokec4 (\cb1 \
+\cb3                 \cf9 \strokec9 model\cf10 \strokec10 =\cf12 \strokec12 "gpt-4o"\cf4 \strokec4 ,\cb1 \
+\cb3                 \cf9 \strokec9 messages\cf10 \strokec10 =\cf9 \strokec9 messages\cf4 \strokec4 ,\cb1 \
+\cb3                 \cf9 \strokec9 response_format\cf10 \strokec10 =\cf4 \strokec4 \{\cb1 \
+\cb3                     \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "json_schema"\cf4 \strokec4 ,\cb1 \
+\cb3                     \cf12 \strokec12 "json_schema"\cf4 \strokec4 : \{\cb1 \
+\cb3                         \cf12 \strokec12 "name"\cf4 \strokec4 : \cf12 \strokec12 "strongs_analysis"\cf4 \strokec4 ,\cb1 \
+\cb3                         \cf12 \strokec12 "strict"\cf4 \strokec4 : \cf11 \strokec11 True\cf4 \strokec4 ,\cb1 \
+\cb3                         \cf12 \strokec12 "schema"\cf4 \strokec4 : \{\cb1 \
+\cb3                             \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "object"\cf4 \strokec4 ,\cb1 \
+\cb3                             \cf12 \strokec12 "properties"\cf4 \strokec4 : \{\cb1 \
+\cb3                                 \cf12 \strokec12 "original_language_info"\cf4 \strokec4 : \{\cb1 \
+\cb3                                     \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "object"\cf4 \strokec4 ,\cb1 \
+\cb3                                     \cf12 \strokec12 "properties"\cf4 \strokec4 : \{\cb1 \
+\cb3                                         \cf12 \strokec12 "strongs_number"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "original_language"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "original_script"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "transliteration"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "pronunciation"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "pronunciation_guide"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \}\cb1 \
+\cb3                                     \},\cb1 \
+\cb3                                     \cf12 \strokec12 "required"\cf4 \strokec4 : [\cf12 \strokec12 "strongs_number"\cf4 \strokec4 , \cf12 \strokec12 "original_language"\cf4 \strokec4 , \cf12 \strokec12 "original_script"\cf4 \strokec4 , \cf12 \strokec12 "transliteration"\cf4 \strokec4 , \cf12 \strokec12 "pronunciation"\cf4 \strokec4 , \cf12 \strokec12 "pronunciation_guide"\cf4 \strokec4 ],\cb1 \
+\cb3                                     \cf12 \strokec12 "additionalProperties"\cf4 \strokec4 : \cf11 \strokec11 False\cf4 \cb1 \strokec4 \
+\cb3                                 \},\cb1 \
+\cb3                                 \cf12 \strokec12 "general_meanings"\cf4 \strokec4 : \{\cb1 \
+\cb3                                     \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "array"\cf4 \strokec4 ,\cb1 \
+\cb3                                     \cf12 \strokec12 "items"\cf4 \strokec4 : \{\cb1 \
+\cb3                                         \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "object"\cf4 \strokec4 ,\cb1 \
+\cb3                                         \cf12 \strokec12 "properties"\cf4 \strokec4 : \{\cb1 \
+\cb3                                             \cf12 \strokec12 "meaning"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                             \cf12 \strokec12 "explanation"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                             \cf12 \strokec12 "usage_context"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \}\cb1 \
+\cb3                                         \},\cb1 \
+\cb3                                         \cf12 \strokec12 "required"\cf4 \strokec4 : [\cf12 \strokec12 "meaning"\cf4 \strokec4 , \cf12 \strokec12 "explanation"\cf4 \strokec4 , \cf12 \strokec12 "usage_context"\cf4 \strokec4 ],\cb1 \
+\cb3                                         \cf12 \strokec12 "additionalProperties"\cf4 \strokec4 : \cf11 \strokec11 False\cf4 \cb1 \strokec4 \
+\cb3                                     \},\cb1 \
+\cb3                                     \cf12 \strokec12 "minItems"\cf4 \strokec4 : \cf13 \strokec13 4\cf4 \strokec4 ,\cb1 \
+\cb3                                     \cf12 \strokec12 "maxItems"\cf4 \strokec4 : \cf13 \strokec13 6\cf4 \cb1 \strokec4 \
+\cb3                                 \},\cb1 \
+\cb3                                 \cf12 \strokec12 "contextual_meaning"\cf4 \strokec4 : \{\cb1 \
+\cb3                                     \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "object"\cf4 \strokec4 ,\cb1 \
+\cb3                                     \cf12 \strokec12 "properties"\cf4 \strokec4 : \{\cb1 \
+\cb3                                         \cf12 \strokec12 "verse_reference"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "verse_text"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "word_in_context"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "contextual_explanation"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "why_this_translation"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                         \cf12 \strokec12 "deeper_insight"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \}\cb1 \
+\cb3                                     \},\cb1 \
+\cb3                                     \cf12 \strokec12 "required"\cf4 \strokec4 : [\cf12 \strokec12 "verse_reference"\cf4 \strokec4 , \cf12 \strokec12 "verse_text"\cf4 \strokec4 , \cf12 \strokec12 "word_in_context"\cf4 \strokec4 , \cf12 \strokec12 "contextual_explanation"\cf4 \strokec4 , \cf12 \strokec12 "why_this_translation"\cf4 \strokec4 , \cf12 \strokec12 "deeper_insight"\cf4 \strokec4 ],\cb1 \
+\cb3                                     \cf12 \strokec12 "additionalProperties"\cf4 \strokec4 : \cf11 \strokec11 False\cf4 \cb1 \strokec4 \
+\cb3                                 \},\cb1 \
+\cb3                                 \cf12 \strokec12 "biblical_usage_examples"\cf4 \strokec4 : \{\cb1 \
+\cb3                                     \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "array"\cf4 \strokec4 ,\cb1 \
+\cb3                                     \cf12 \strokec12 "items"\cf4 \strokec4 : \{\cb1 \
+\cb3                                         \cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "object"\cf4 \strokec4 ,\cb1 \
+\cb3                                         \cf12 \strokec12 "properties"\cf4 \strokec4 : \{\cb1 \
+\cb3                                             \cf12 \strokec12 "verse_reference"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                             \cf12 \strokec12 "verse_text"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                             \cf12 \strokec12 "translated_as"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                             \cf12 \strokec12 "meaning_used"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \},\cb1 \
+\cb3                                             \cf12 \strokec12 "significance"\cf4 \strokec4 : \{\cf12 \strokec12 "type"\cf4 \strokec4 : \cf12 \strokec12 "string"\cf4 \strokec4 \}\cb1 \
+\cb3                                         \},\cb1 \
+\cb3                                         \cf12 \strokec12 "required"\cf4 \strokec4 : [\cf12 \strokec12 "verse_reference"\cf4 \strokec4 , \cf12 \strokec12 "verse_text"\cf4 \strokec4 , \cf12 \strokec12 "translated_as"\cf4 \strokec4 , \cf12 \strokec12 "meaning_used"\cf4 \strokec4 , \cf12 \strokec12 "significance"\cf4 \strokec4 ],\cb1 \
+\cb3                                         \cf12 \strokec12 "additionalProperties"\cf4 \strokec4 : \cf11 \strokec11 False\cf4 \cb1 \strokec4 \
+\cb3                                     \},\cb1 \
+\cb3                                     \cf12 \strokec12 "minItems"\cf4 \strokec4 : \cf13 \strokec13 7\cf4 \strokec4 ,\cb1 \
+\cb3                                     \cf12 \strokec12 "maxItems"\cf4 \strokec4 : \cf13 \strokec13 7\cf4 \cb1 \strokec4 \
+\cb3                                 \}\cb1 \
+\cb3                             \},\cb1 \
+\cb3                             \cf12 \strokec12 "required"\cf4 \strokec4 : [\cf12 \strokec12 "original_language_info"\cf4 \strokec4 , \cf12 \strokec12 "general_meanings"\cf4 \strokec4 , \cf12 \strokec12 "contextual_meaning"\cf4 \strokec4 , \cf12 \strokec12 "biblical_usage_examples"\cf4 \strokec4 ],\cb1 \
+\cb3                             \cf12 \strokec12 "additionalProperties"\cf4 \strokec4 : \cf11 \strokec11 False\cf4 \cb1 \strokec4 \
+\cb3                         \}\cb1 \
+\cb3                     \}\cb1 \
+\cb3                 \},\cb1 \
+\cb3                 \cf9 \strokec9 stream\cf10 \strokec10 =\cf11 \strokec11 True\cf4 \cb1 \strokec4 \
+\cb3             )\cb1 \
+\
+\cb3             \cf9 \strokec9 accumulated_content\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf12 \strokec12 ""\cf4 \cb1 \strokec4 \
+\cb3             \cf9 \strokec9 usage_data\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \{\}\cb1 \
+\
+\cb3             \cf2 \strokec2 # Process the streaming response correctly\cf4 \cb1 \strokec4 \
+\cb3             \cf5 \strokec5 for\cf4 \strokec4  \cf9 \strokec9 chunk\cf4 \strokec4  \cf5 \strokec5 in\cf4 \strokec4  \cf9 \strokec9 stream\cf4 \strokec4 :\cb1 \
+\cb3                 \cf5 \strokec5 if\cf4 \strokec4  \cf9 \strokec9 chunk\cf4 \strokec4 .choices[\cf13 \strokec13 0\cf4 \strokec4 ].delta.content:\cb1 \
+\cb3                     \cf9 \strokec9 content_chunk\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf9 \strokec9 chunk\cf4 \strokec4 .choices[\cf13 \strokec13 0\cf4 \strokec4 ].delta.content\cb1 \
+\cb3                     \cf9 \strokec9 accumulated_content\cf4 \strokec4  \cf10 \strokec10 +=\cf4 \strokec4  \cf9 \strokec9 content_chunk\cf4 \cb1 \strokec4 \
+\cb3                     \cb1 \
+\cb3                     \cf2 \strokec2 # Yield the chunk for real-time streaming\cf4 \cb1 \strokec4 \
+\cb3                     \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'content'\cf4 \strokec4 , \cf12 \strokec12 'data'\cf4 \strokec4 : \cf9 \strokec9 content_chunk\cf4 \strokec4 \})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\
+\cb3                 \cf2 \strokec2 # Capture usage data from the final chunk\cf4 \cb1 \strokec4 \
+\cb3                 \cf5 \strokec5 if\cf4 \strokec4  \cf8 \strokec8 hasattr\cf4 \strokec4 (\cf9 \strokec9 chunk\cf4 \strokec4 , \cf12 \strokec12 'usage'\cf4 \strokec4 ) \cf7 \strokec7 and\cf4 \strokec4  \cf9 \strokec9 chunk\cf4 \strokec4 .usage:\cb1 \
+\cb3                     \cf9 \strokec9 usage_data\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \{\cb1 \
+\cb3                         \cf12 \strokec12 "prompt_tokens"\cf4 \strokec4 : \cf9 \strokec9 chunk\cf4 \strokec4 .usage.prompt_tokens,\cb1 \
+\cb3                         \cf12 \strokec12 "completion_tokens"\cf4 \strokec4 : \cf9 \strokec9 chunk\cf4 \strokec4 .usage.completion_tokens,\cb1 \
+\cb3                         \cf12 \strokec12 "total_tokens"\cf4 \strokec4 : \cf9 \strokec9 chunk\cf4 \strokec4 .usage.total_tokens\cb1 \
+\cb3                     \}\cb1 \
+\
+\cb3             \cf2 \strokec2 # Parse and validate the complete response\cf4 \cb1 \strokec4 \
+\cb3             \cf5 \strokec5 try\cf4 \strokec4 :\cb1 \
+\cb3                 \cf9 \strokec9 parsed_content\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 loads\cf4 \strokec4 (\cf9 \strokec9 accumulated_content\cf4 \strokec4 )\cb1 \
+\cb3                 \cf9 \strokec9 validated_analysis\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf6 \strokec6 StrongsAnalysis\cf4 \strokec4 (\cf10 \strokec10 **\cf9 \strokec9 parsed_content\cf4 \strokec4 )\cb1 \
+\cb3                 \cb1 \
+\cb3                 \cf2 \strokec2 # Log usage if available\cf4 \cb1 \strokec4 \
+\cb3                 \cf5 \strokec5 if\cf4 \strokec4  \cf9 \strokec9 usage_data\cf4 \strokec4 :\cb1 \
+\cb3                     \cf9 \strokec9 cost_data\cf4 \strokec4  \cf10 \strokec10 =\cf4 \strokec4  \cf9 \strokec9 self\cf4 \strokec4 .\cf9 \strokec9 logging_service\cf4 \strokec4 .\cf8 \strokec8 calculate_cost\cf4 \strokec4 (\cb1 \
+\cb3                         \cf9 \strokec9 usage_data\cf4 \strokec4 .\cf8 \strokec8 get\cf4 \strokec4 (\cf12 \strokec12 "prompt_tokens"\cf4 \strokec4 , \cf13 \strokec13 0\cf4 \strokec4 ),\cb1 \
+\cb3                         \cf9 \strokec9 usage_data\cf4 \strokec4 .\cf8 \strokec8 get\cf4 \strokec4 (\cf12 \strokec12 "completion_tokens"\cf4 \strokec4 , \cf13 \strokec13 0\cf4 \strokec4 )\cb1 \
+\cb3                     )\cb1 \
+\cb3                     \cf9 \strokec9 self\cf4 \strokec4 .\cf9 \strokec9 logging_service\cf4 \strokec4 .\cf8 \strokec8 log_token_usage\cf4 \strokec4 (\cb1 \
+\cb3                         \cf12 \strokec12 "get_strongs_analysis_stream"\cf4 \strokec4 , \cf9 \strokec9 book\cf4 \strokec4 , \cf9 \strokec9 chapter\cf4 \strokec4 , \cf9 \strokec9 word\cf4 \strokec4 , \cf9 \strokec9 usage_data\cf4 \strokec4 , \cf9 \strokec9 cost_data\cf4 \cb1 \strokec4 \
+\cb3                     )\cb1 \
+\
+\cb3                 \cf2 \strokec2 # Send completion signal with validated data\cf4 \cb1 \strokec4 \
+\cb3                 \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'complete'\cf4 \strokec4 , \cf12 \strokec12 'data'\cf4 \strokec4 : \cf9 \strokec9 validated_analysis\cf4 \strokec4 .\cf8 \strokec8 model_dump\cf4 \strokec4 ()\})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\cb3                 \cb1 \
+\cb3             \cf5 \strokec5 except\cf4 \strokec4  \cf6 \strokec6 json\cf4 \strokec4 .\cf6 \strokec6 JSONDecodeError\cf4 \strokec4  \cf5 \strokec5 as\cf4 \strokec4  \cf9 \strokec9 e\cf4 \strokec4 :\cb1 \
+\cb3                 \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'error'\cf4 \strokec4 , \cf12 \strokec12 'message'\cf4 \strokec4 : \cf7 \strokec7 f\cf12 \strokec12 'JSON parsing error: \cf7 \strokec7 \{\cf6 \strokec6 str\cf4 \strokec4 (\cf9 \strokec9 e\cf4 \strokec4 )\cf7 \strokec7 \}\cf12 \strokec12 '\cf4 \strokec4 \})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\cb3             \cf5 \strokec5 except\cf4 \strokec4  \cf6 \strokec6 Exception\cf4 \strokec4  \cf5 \strokec5 as\cf4 \strokec4  \cf9 \strokec9 e\cf4 \strokec4 :\cb1 \
+\cb3                 \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'error'\cf4 \strokec4 , \cf12 \strokec12 'message'\cf4 \strokec4 : \cf7 \strokec7 f\cf12 \strokec12 'Validation error: \cf7 \strokec7 \{\cf6 \strokec6 str\cf4 \strokec4 (\cf9 \strokec9 e\cf4 \strokec4 )\cf7 \strokec7 \}\cf12 \strokec12 '\cf4 \strokec4 \})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+\
+\cb3         \cf5 \strokec5 except\cf4 \strokec4  \cf6 \strokec6 Exception\cf4 \strokec4  \cf5 \strokec5 as\cf4 \strokec4  \cf9 \strokec9 e\cf4 \strokec4 :\cb1 \
+\cb3             \cf5 \strokec5 yield\cf4 \strokec4  \cf7 \strokec7 f\cf12 \strokec12 "data: \cf7 \strokec7 \{\cf6 \strokec6 json\cf4 \strokec4 .\cf8 \strokec8 dumps\cf4 \strokec4 (\{\cf12 \strokec12 'type'\cf4 \strokec4 : \cf12 \strokec12 'error'\cf4 \strokec4 , \cf12 \strokec12 'message'\cf4 \strokec4 : \cf7 \strokec7 f\cf12 \strokec12 'API error: \cf7 \strokec7 \{\cf6 \strokec6 str\cf4 \strokec4 (\cf9 \strokec9 e\cf4 \strokec4 )\cf7 \strokec7 \}\cf12 \strokec12 '\cf4 \strokec4 \})\cf7 \strokec7 \}\cf14 \strokec14 \\n\\n\cf12 \strokec12 "\cf4 \cb1 \strokec4 \
+}

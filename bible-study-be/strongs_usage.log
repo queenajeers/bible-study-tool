@@ -33,3 +33,8 @@
 2025-08-02 22:08:44,956 - INFO - get_strongs_word - Tokens: 1975 | Cost: $0.010682
 2025-08-02 23:16:48,529 - INFO - get_bible_chapter_intro - Tokens: 1163 | Cost: $0.005530
 2025-08-02 23:22:56,198 - INFO - get_strongs_word - Tokens: 2064 | Cost: $0.011382
+2025-08-03 15:43:11,380 - INFO - get_bible_chapter_intro - Tokens: 1165 | Cost: $0.005558
+2025-08-03 15:45:30,841 - INFO - get_bible_chapter_intro - Tokens: 1140 | Cost: $0.005358
+2025-08-03 15:45:40,813 - INFO - get_bible_chapter_intro - Tokens: 1274 | Cost: $0.006430
+2025-08-03 15:48:16,837 - INFO - get_strongs_word - Tokens: 1952 | Cost: $0.010498
+2025-08-03 15:50:27,242 - INFO - get_strongs_word - Tokens: 1781 | Cost: $0.009130
