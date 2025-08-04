@@ -31,10 +31,14 @@ class BiblicalUsageExample(BaseModel):
     significance: str
 
 class StrongsAnalysis(BaseModel):
-    original_language_info: OriginalLanguageInfo
-    general_meanings: List[GeneralMeaning]
-    contextual_meaning: ContextualMeaning
-    biblical_usage_examples: List[BiblicalUsageExample]
+    WordHeader: str
+    LanguageInfo: str
+    OriginalText: str
+    Pronunciation: str
+    LiteralMeaning: str
+    ContextualMeaning: str
+    OtherUses: str
+    CulturalSignificance: str
 
 class ChapterParagraph(BaseModel):
     title: str

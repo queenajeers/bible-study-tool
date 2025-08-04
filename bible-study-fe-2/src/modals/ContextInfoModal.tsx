@@ -231,7 +231,6 @@ export const ContextInfoModal: React.FC<ContextInfoModalProps> = ({
 
     fetchStreamingContext();
 
-    // Cleanup function
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -271,157 +270,250 @@ export const ContextInfoModal: React.FC<ContextInfoModalProps> = ({
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   return (
-    <SideModalLayout isOpen={isOpen} onClose={onClose}>
-      <div className="h-full flex flex-col overflow-hidden font-merriweather">
-        {/* Header */}
-        <div
-          className={`flex items-center justify-between p-4 border-b border-gray-200 ${
-            isMobile ? "" : "sticky top-0 bg-white z-10"
-          }`}
-        >
-          <div className="flex items-center space-x-3">
-            <h2 className="text-base font-semibold text-gray-800">
-              Chapter Context
-            </h2>
-            {streamingState.isStreaming && (
-              <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-            )}
-            {streamingState.isComplete && (
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
-            )}
-            {streamingState.error && (
-              <AlertCircle className="w-4 h-4 text-red-500" />
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+    <>
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideInFromRight {
+          from {
+            opacity: 0;
+            transform: translateX(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes typewriter {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        .fade-in-up {
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .fade-in {
+          animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .slide-in-right {
+          animation: slideInFromRight 0.5s ease-out forwards;
+        }
+
+        .typewriter-effect {
+          animation: typewriter 0.3s ease-out forwards;
+        }
+
+        .streaming-cursor {
+          display: inline-block;
+          width: 2px;
+          height: 1.2em;
+          background-color: #3b82f6;
+          animation: blink 1s infinite;
+          margin-left: 2px;
+          vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+
+        .content-section {
+          opacity: 0;
+          transform: translateY(15px);
+        }
+
+        .content-section.visible {
+          animation: fadeInUp 0.5s ease-out forwards;
+        }
+      `}</style>
+
+      <SideModalLayout isOpen={isOpen} onClose={onClose}>
+        <div className="h-full flex flex-col overflow-hidden font-serif">
+          {/* Header */}
+          <div
+            className={`flex items-center justify-between p-4 border-b border-gray-200 ${
+              isMobile ? "" : "sticky top-0 bg-white z-10"
+            }`}
           >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Loading state - only show if no content yet */}
-          {streamingState.isStreaming && !currentData.MainHeading && (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              <p className="text-gray-500 text-sm">
-                Crafting your chapter preview...
-              </p>
+            <div className="flex items-center space-x-3">
+              <h2 className="text-base font-semibold text-gray-800">
+                Chapter Context
+              </h2>
+              {streamingState.isStreaming && (
+                <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+              )}
+              {streamingState.isComplete && (
+                <CheckCircle2 className="w-4 h-4 text-green-500 fade-in" />
+              )}
+              {streamingState.error && (
+                <AlertCircle className="w-4 h-4 text-red-500" />
+              )}
             </div>
-          )}
+            <button
+              onClick={onClose}
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
 
-          {/* Error state */}
-          {streamingState.error && (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center space-y-2">
-                <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
-                <p className="text-red-500 text-sm">
-                  Error loading context: {streamingState.error}
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* Loading state - only show if no content yet */}
+            {streamingState.isStreaming && !currentData.MainHeading && (
+              <div className="flex flex-col items-center justify-center py-12 space-y-4 fade-in">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                <p className="text-gray-500 text-sm">
+                  Crafting your chapter preview...
                 </p>
-                <button
-                  onClick={() => {
-                    // Reset and retry
-                    setStreamingState({
-                      isStreaming: false,
-                      streamedSections: {
-                        MainHeading: "",
-                        TimelineInfo: "",
-                        sections: {},
-                      },
-                      parsedData: null,
-                      error: null,
-                      isComplete: false,
-                    });
-                    // The useEffect will trigger a new fetch
-                  }}
-                  className="text-blue-500 text-sm hover:underline"
-                >
-                  Try again
-                </button>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Content */}
-          {currentData.MainHeading && (
-            <div className="prose prose-gray max-w-none">
-              {/* Main Heading */}
-              <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
-                  {currentData.MainHeading}
-                  {streamingState.isStreaming && !currentData.TimelineInfo && (
-                    <span className="inline-block w-2 h-6 bg-blue-500 animate-pulse ml-1" />
-                  )}
-                </h1>
-                {currentData.TimelineInfo && (
-                  <div className="text-sm text-gray-600 font-medium bg-gray-100 px-3 py-1 rounded-full inline-block">
-                    {currentData.TimelineInfo}
+            {/* Error state */}
+            {streamingState.error && (
+              <div className="flex items-center justify-center py-12 fade-in-up">
+                <div className="text-center space-y-2">
+                  <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
+                  <p className="text-red-500 text-sm">
+                    Error loading context: {streamingState.error}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setStreamingState({
+                        isStreaming: false,
+                        streamedSections: {
+                          MainHeading: "",
+                          TimelineInfo: "",
+                          sections: {},
+                        },
+                        parsedData: null,
+                        error: null,
+                        isComplete: false,
+                      });
+                    }}
+                    className="text-blue-500 text-sm hover:underline"
+                  >
+                    Try again
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Content */}
+            {currentData.MainHeading && (
+              <div className="prose prose-gray max-w-none">
+                {/* Main Heading */}
+                <div className="mb-8">
+                  <h1 className="text-2xl font-bold text-gray-900 mb-3 leading-tight fade-in-up">
+                    {currentData.MainHeading}
                     {streamingState.isStreaming &&
-                      currentData.Paras.length === 0 && (
-                        <span className="inline-block w-1 h-3 bg-blue-500 animate-pulse ml-1" />
+                      !currentData.TimelineInfo && (
+                        <span className="streaming-cursor" />
                       )}
+                  </h1>
+                  {currentData.TimelineInfo && (
+                    <div className="text-sm text-gray-600 font-medium bg-gray-100 px-3 py-1 rounded-full inline-block slide-in-right">
+                      {currentData.TimelineInfo}
+                      {streamingState.isStreaming &&
+                        currentData.Paras.length === 0 && (
+                          <span
+                            className="streaming-cursor"
+                            style={{ height: "12px" }}
+                          />
+                        )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Paragraphs */}
+                {currentData.Paras && currentData.Paras.length > 0 && (
+                  <div className="space-y-6 text-gray-800 leading-relaxed">
+                    {currentData.Paras.map((section, index) => {
+                      const isLastSection =
+                        index === currentData.Paras.length - 1;
+                      const isCurrentlyStreaming =
+                        streamingState.isStreaming &&
+                        !streamingState.isComplete &&
+                        isLastSection;
+
+                      return (
+                        <div
+                          key={index}
+                          className="content-section visible"
+                          style={{ animationDelay: `${index * 0.2}s` }}
+                        >
+                          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                            {section.title}
+                          </h3>
+                          <p className="text-gray-700 leading-relaxed">
+                            {section.content}
+                            {isCurrentlyStreaming && (
+                              <span className="streaming-cursor" />
+                            )}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Call to action - only show when complete */}
+                {streamingState.isComplete && streamingState.parsedData && (
+                  <div
+                    className="mt-8 pt-6 border-t border-gray-200 fade-in-up"
+                    style={{ animationDelay: "0.3s" }}
+                  >
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
+                      <p className="text-sm text-gray-700 font-medium text-center">
+                        Ready to dive into{" "}
+                        <span className="font-semibold text-indigo-700">
+                          {book} {chapter}
+                        </span>
+                        ? The story awaits your discovery.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Streaming indicator */}
+                {streamingState.isStreaming && !streamingState.isComplete && (
+                  <div className="mt-4 flex items-center justify-center space-x-2 text-blue-500 text-sm fade-in">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Generating insights...</span>
                   </div>
                 )}
               </div>
-
-              {/* Paragraphs */}
-              {currentData.Paras && currentData.Paras.length > 0 && (
-                <div className="space-y-6 text-gray-800 leading-relaxed">
-                  {currentData.Paras.map((section, index) => {
-                    const isLastSection =
-                      index === currentData.Paras.length - 1;
-                    const isCurrentlyStreaming =
-                      streamingState.isStreaming &&
-                      !streamingState.isComplete &&
-                      isLastSection;
-
-                    return (
-                      <div key={index}>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                          {section.title}
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed">
-                          {section.content}
-                          {isCurrentlyStreaming && (
-                            <span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-1" />
-                          )}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Call to action - only show when complete */}
-              {streamingState.isComplete && streamingState.parsedData && (
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-700 font-medium text-center">
-                      Ready to dive into{" "}
-                      <span className="font-semibold text-indigo-700">
-                        {book} {chapter}
-                      </span>
-                      ? The story awaits your discovery.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Streaming indicator */}
-              {streamingState.isStreaming && !streamingState.isComplete && (
-                <div className="mt-4 flex items-center justify-center space-x-2 text-blue-500 text-sm">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Generating insights...</span>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </SideModalLayout>
+      </SideModalLayout>
+    </>
   );
 };
 

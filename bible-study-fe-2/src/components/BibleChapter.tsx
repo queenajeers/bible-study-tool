@@ -11,6 +11,7 @@ import { SideModalLayout } from "../modals/SideModalLayout";
 import { VerseModalContent } from "../modals/VerseModalContent";
 import { ContextInfoModal } from "../modals/ContextInfoModal";
 import { StrongsInfoModal } from "../modals/StrongsInfoModal";
+import StrongsAnalysisModal from "../modals/StrongsAnalysisModal";
 
 type BibleChapterProps = {
   book: string;
@@ -1133,7 +1134,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
         book={book}
         chapter={chapter}
       />
-      <StrongsInfoModal
+      <StrongsAnalysisModal
         isOpen={isStrongsOpen}
         onClose={() => setIsStrongsOpen(false)}
         book={book}

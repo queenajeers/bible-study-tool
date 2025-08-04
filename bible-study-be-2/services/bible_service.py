@@ -190,7 +190,6 @@ Chapter: **{book} {chapter}**
         return sections
 
     
-
     def _section_name_to_title(self, section_name: str) -> str:
         """Convert section name to display title."""
         mapping = {
@@ -200,122 +199,114 @@ Chapter: **{book} {chapter}**
             "WhyThisMattersToday": "Why This Matters Today"
         }
         return mapping.get(section_name, section_name)
+    
+    # Add this method to your BibleService class
 
-    async def get_strongs_analysis_stream(self, book: str, chapter: int, word: str) -> AsyncGenerator[str, None]:
-        """Stream Strong's analysis with structured output."""
+    # Add this method to your BibleService class
+
+    # Add this method to your BibleService class
+
+    async def get_strongs_analysis_stream(self, book: str, chapter: int, verse: int, word: str) -> AsyncGenerator[str, None]:
+        """Stream Strong's word analysis with true incremental streaming."""
         
         messages = [
             {
                 "role": "user",
                 "content": f"""
-You are a biblical scholar specializing in Strong's Concordance analysis. Analyze the word "{word}" as it appears in {book} {chapter} and provide comprehensive Strong's information structured for a beautiful frontend interface.
+    You are a biblical scholar and linguist providing comprehensive analysis of the word "{word}" as it appears in {book} {chapter}:{verse}. 
 
-**INSTRUCTIONS:**
-- Use clear, simple English that anyone can understand
-- Structure response for optimal frontend display (think cards and visual sections)
-- Focus on the original language richness and biblical depth
-- Make it encouraging and help people love God's Word more
+    First, identify the correct Strong's number for the word "{word}" in this specific verse context. Then provide thorough, academic yet accessible insights into this biblical word and its Strong's number.
 
-Return this structured JSON response with the exact schema provided.
+    Please structure your response EXACTLY as follows, with clear section markers:
 
-Word to analyze: "{word}" in {book} {chapter}
+    [WORD_HEADER]
+    The English word this Strong's number represents in the given verse, followed by a pipe separator, then the Strong's number (e.g., "love|G25"). Only include the primary English word used in this specific verse.
+    [/WORD_HEADER]
 
-Focus on creating a clean, structured response that will look beautiful in a modern web interface with clear sections and easy-to-read information.
-"""
+    [LANGUAGE_INFO]
+    The original language (Hebrew, Greek, Aramaic) this word comes from.
+    [/LANGUAGE_INFO]
+
+    [ORIGINAL_TEXT]
+    The original language text/spelling of this word exactly as it appears in ancient manuscripts.
+    [/ORIGINAL_TEXT]
+
+    [PRONUNCIATION]
+    The phonetic pronunciation guide for this word (e.g., "ah-gap-ah'-o").
+    [/PRONUNCIATION]
+
+    [LITERAL_MEANING]
+    The core, literal meaning(s) of this word in its original language, independent of any specific biblical context. Include root meanings, etymology if relevant, and fundamental definitions. This should be 2-3 sentences focusing on the word's basic semantic range.
+    [/LITERAL_MEANING]
+
+    [CONTEXTUAL_MEANING]
+    How this specific Strong's word is used and what it means specifically in {book} {chapter}:{verse}. Explain the particular nuance, theological significance, or contextual application in this verse. Focus on why this specific word was chosen by the biblical author in this context. This should be 2-3 sentences.
+    [/CONTEXTUAL_MEANING]
+
+    [OTHER_USES]
+    List 7-10 other significant biblical verses where this exact Strong's number appears, showing how it was translated in each case. Format each entry as: "Reference|English Translation|Brief Context". For example: "John 3:16|loved|God's love for the world" or "1 Corinthians 13:4|love|description of love's characteristics". Include diverse examples showing the word's range of meaning and usage patterns across Scripture.
+    [/OTHER_USES]
+
+    [CULTURAL_SIGNIFICANCE]
+    Explain the cultural, historical, and theological significance of this word in biblical times and its importance for understanding Scripture. Discuss how ancient audiences would have understood this word, any cultural nuances, and why it matters for biblical interpretation today. This should be 3-4 sentences providing rich cultural context.
+    [/CULTURAL_SIGNIFICANCE]
+
+    Word to analyze: "{word}"
+    Reference: {book} {chapter}:{verse}
+
+    Provide scholarly analysis that helps readers understand both the linguistic precision and spiritual depth of God's Word through careful word study.
+    """
             }
         ]
 
         try:
             # Create streaming response
             stream = self.client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-4.1",
                 messages=messages,
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": {
-                        "name": "strongs_analysis",
-                        "strict": True,
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "original_language_info": {
-                                    "type": "object",
-                                    "properties": {
-                                        "strongs_number": {"type": "string"},
-                                        "original_language": {"type": "string"},
-                                        "original_script": {"type": "string"},
-                                        "transliteration": {"type": "string"},
-                                        "pronunciation": {"type": "string"},
-                                        "pronunciation_guide": {"type": "string"}
-                                    },
-                                    "required": ["strongs_number", "original_language", "original_script", "transliteration", "pronunciation", "pronunciation_guide"],
-                                    "additionalProperties": False
-                                },
-                                "general_meanings": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "meaning": {"type": "string"},
-                                            "explanation": {"type": "string"},
-                                            "usage_context": {"type": "string"}
-                                        },
-                                        "required": ["meaning", "explanation", "usage_context"],
-                                        "additionalProperties": False
-                                    },
-                                    "minItems": 4,
-                                    "maxItems": 6
-                                },
-                                "contextual_meaning": {
-                                    "type": "object",
-                                    "properties": {
-                                        "verse_reference": {"type": "string"},
-                                        "verse_text": {"type": "string"},
-                                        "word_in_context": {"type": "string"},
-                                        "contextual_explanation": {"type": "string"},
-                                        "why_this_translation": {"type": "string"},
-                                        "deeper_insight": {"type": "string"}
-                                    },
-                                    "required": ["verse_reference", "verse_text", "word_in_context", "contextual_explanation", "why_this_translation", "deeper_insight"],
-                                    "additionalProperties": False
-                                },
-                                "biblical_usage_examples": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "verse_reference": {"type": "string"},
-                                            "verse_text": {"type": "string"},
-                                            "translated_as": {"type": "string"},
-                                            "meaning_used": {"type": "string"},
-                                            "significance": {"type": "string"}
-                                        },
-                                        "required": ["verse_reference", "verse_text", "translated_as", "meaning_used", "significance"],
-                                        "additionalProperties": False
-                                    },
-                                    "minItems": 7,
-                                    "maxItems": 7
-                                }
-                            },
-                            "required": ["original_language_info", "general_meanings", "contextual_meaning", "biblical_usage_examples"],
-                            "additionalProperties": False
-                        }
-                    }
-                },
                 stream=True
             )
 
             accumulated_content = ""
             usage_data = {}
+            
+            # Track what we've already sent to avoid duplicates
+            sent_content = {
+                "WordHeader": "",
+                "LanguageInfo": "",
+                "OriginalText": "",
+                "Pronunciation": "",
+                "LiteralMeaning": "",
+                "ContextualMeaning": "",
+                "OtherUses": "",
+                "CulturalSignificance": ""
+            }
 
-            # Process the streaming response correctly
+            # Process the streaming response
             for chunk in stream:
                 if chunk.choices[0].delta.content:
                     content_chunk = chunk.choices[0].delta.content
                     accumulated_content += content_chunk
                     
-                    # Yield the chunk for real-time streaming
-                    yield f"data: {json.dumps({'type': 'content', 'data': content_chunk})}\n\n"
+                    # Parse sections as they come in
+                    parsed_sections = self._parse_strongs_streaming_sections(accumulated_content)
+                    
+                    # Check if we have new content to stream
+                    for section_name, content in parsed_sections.items():
+                        if content and content != sent_content.get(section_name, ""):
+                            # Calculate new content
+                            previous_length = len(sent_content.get(section_name, ""))
+                            if len(content) > previous_length:
+                                new_content = content[previous_length:]
+
+                                # Avoid streaming any part of content that still includes section markers
+                                if "[" in new_content or "]" in new_content:
+                                    continue  # Wait for a cleaner version
+
+                                # Update sent content and stream the new part
+                                sent_content[section_name] = content
+                                
+                                yield f"data: {json.dumps({'type': 'section_update', 'section': section_name, 'content': new_content, 'is_complete': False})}\n\n"
 
                 # Capture usage data from the final chunk
                 if hasattr(chunk, 'usage') and chunk.usage:
@@ -325,10 +316,24 @@ Focus on creating a clean, structured response that will look beautiful in a mod
                         "total_tokens": chunk.usage.total_tokens
                     }
 
-            # Parse and validate the complete response
+            # Final processing
+            final_sections = self._parse_strongs_streaming_sections(accumulated_content)
+            
+            # Build final structured data
+            sections_data = {
+                "WordHeader": final_sections.get("WordHeader", ""),
+                "LanguageInfo": final_sections.get("LanguageInfo", ""),
+                "OriginalText": final_sections.get("OriginalText", ""),
+                "Pronunciation": final_sections.get("Pronunciation", ""),
+                "LiteralMeaning": final_sections.get("LiteralMeaning", ""),
+                "ContextualMeaning": final_sections.get("ContextualMeaning", ""),
+                "OtherUses": final_sections.get("OtherUses", ""),
+                "CulturalSignificance": final_sections.get("CulturalSignificance", "")
+            }
+
+            # Validate the complete response
             try:
-                parsed_content = json.loads(accumulated_content)
-                validated_analysis = StrongsAnalysis(**parsed_content)
+                validated_analysis = StrongsAnalysis(**sections_data)
                 
                 # Log usage if available
                 if usage_data:
@@ -337,18 +342,42 @@ Focus on creating a clean, structured response that will look beautiful in a mod
                         usage_data.get("completion_tokens", 0)
                     )
                     self.logging_service.log_token_usage(
-                        "get_strongs_analysis_stream", book, chapter, word, usage_data, cost_data
+                        "get_strongs_analysis_stream", book, chapter, verse, usage_data, cost_data
                     )
 
                 # Send completion signal with validated data
                 yield f"data: {json.dumps({'type': 'complete', 'data': validated_analysis.model_dump()})}\n\n"
                 
-            except json.JSONDecodeError as e:
-                yield f"data: {json.dumps({'type': 'error', 'message': f'JSON parsing error: {str(e)}'})}\n\n"
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'message': f'Validation error: {str(e)}'})}\n\n"
 
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': f'API error: {str(e)}'})}\n\n"
 
-
+    def _parse_strongs_streaming_sections(self, content: str) -> Dict[str, str]:
+        """Parse Strong's analysis sections from streaming content using markers."""
+        sections = {}
+        
+        # Define section patterns for Strong's analysis
+        patterns = {
+            "WordHeader": r'\[WORD_HEADER\]\s*(.*?)\s*(?:\[/WORD_HEADER\]|$)',
+            "LanguageInfo": r'\[LANGUAGE_INFO\]\s*(.*?)\s*(?:\[/LANGUAGE_INFO\]|$)',
+            "OriginalText": r'\[ORIGINAL_TEXT\]\s*(.*?)\s*(?:\[/ORIGINAL_TEXT\]|$)',
+            "Pronunciation": r'\[PRONUNCIATION\]\s*(.*?)\s*(?:\[/PRONUNCIATION\]|$)',
+            "LiteralMeaning": r'\[LITERAL_MEANING\]\s*(.*?)(?:\s*\[(?:CONTEXTUAL_MEANING|OTHER_USES|CULTURAL_SIGNIFICANCE|/LITERAL_MEANING\])|$)',
+            "ContextualMeaning": r'\[CONTEXTUAL_MEANING\]\s*(.*?)(?:\s*\[(?:OTHER_USES|CULTURAL_SIGNIFICANCE|/CONTEXTUAL_MEANING\])|$)',
+            "OtherUses": r'\[OTHER_USES\]\s*(.*?)(?:\s*\[(?:CULTURAL_SIGNIFICANCE|/OTHER_USES\])|$)',
+            "CulturalSignificance": r'\[CULTURAL_SIGNIFICANCE\]\s*(.*?)(?:\s*\[/CULTURAL_SIGNIFICANCE\]|$)'
+        }
+        
+        import re
+        
+        for section_name, pattern in patterns.items():
+            match = re.search(pattern, content, re.DOTALL | re.IGNORECASE)
+            if match:
+                section_content = match.group(1).strip()
+                # Only include non-empty content
+                if section_content:
+                    sections[section_name] = section_content
+        
+        return sections
