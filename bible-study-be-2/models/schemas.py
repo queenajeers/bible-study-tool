@@ -30,12 +30,17 @@ class BiblicalUsageExample(BaseModel):
     meaning_used: str
     significance: str
 
+# In models/schemas.py - Update the StrongsAnalysis model
+
+from pydantic import BaseModel
+from typing import Optional
+
 class StrongsAnalysis(BaseModel):
     WordHeader: str
     LanguageInfo: str
     OriginalText: str
     Pronunciation: str
-    LiteralMeaning: str
+    RootMeanings: str  # Changed from LiteralMeaning
     ContextualMeaning: str
     OtherUses: str
     CulturalSignificance: str

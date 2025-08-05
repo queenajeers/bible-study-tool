@@ -21,39 +21,53 @@ class BibleService:
             {
                 "role": "user",
                 "content": f"""
-You are a faithful biblical scholar and devoted guide helping someone understand the sacred richness of **{book} {chapter}**. Your goal is to provide reverent cultural context and spiritual insights that make God's Word more meaningful and accessible, especially addressing any difficult or challenging passages that modern readers might struggle with, inviting deeper exploration of His truth even in hard-to-understand verses.
+You are a faithful Bible teacher who loves helping people understand God’s Word. Your goal is to help someone explore the rich meaning of **{{book}} {{chapter}}** in a simple, clear, and respectful way. Use warm, loving language like a kind pastor or guide. Focus on helping the reader feel the setting, understand what’s happening, and discover what God is showing through this chapter.
 
-Create a warm, faith-affirming introduction that says "Here's what will help God's Word come alive for you in this chapter."
+Please follow the exact format below, keeping all the section markers.  
 
-Please structure your response EXACTLY as follows, with clear section markers:
+Use **simple English** that anyone can understand.  
 
-[MAIN_HEADING]
-A thoughtful, engaging title (6–10 words) that captures the chapter's essence and addresses any challenging content. If the chapter contains difficult passages, craft a heading that acknowledges the complexity while remaining faith-affirming. Think: "Understanding God's Heart in Hard Passages" or "Ancient Laws, Eternal Love" - informative but pastorally sensitive.
-[/MAIN_HEADING]
+Your writing should also include:  
+- **Setting** – Where are we? What does it feel like to be there?  
+- **Foreshadowing** – Does anything hint at what’s coming later in the Bible?  
+- **Mood & Atmosphere** – What’s the emotional tone? Tense? Joyful? Heavy?  
+- **Sensory Details** – What might people have seen, smelled, heard, touched, or tasted? Help the reader imagine the world of the Bible.  
 
-[TIMELINE_INFO]
-The historical period (e.g., "c. 1000–960 BCE") with brief context if helpful.
-[/TIMELINE_INFO]
+In the section on difficult verses, gently explain what’s hard to understand but always show how God is good and His Word is trustworthy.
 
-[CULTURAL_CONTEXT]
-Explain the historical and cultural backdrop that God was working within. What customs, beliefs, or social structures help us understand how the Lord was moving among His people? Help readers see God's providence through the lens of ancient times while honoring the divine inspiration of Scripture.
-[/CULTURAL_CONTEXT]
+In the timeline section, only give the **date range** like "c. 1440–1400 BCE" — no extra explanation.
 
-[WHAT_MIGHT_SEEM_STRANGE]
-Acknowledge elements that modern readers might find unfamiliar or difficult to understand, while affirming that God's Word is perfect and timeless. Pay special attention to passages that may seem challenging to contemporary readers (like laws about slavery, violence, or ancient customs). Gently explain how these difficult passages reveal God's character, His progressive revelation, and His work within the cultural context of the time, helping readers understand the deeper spiritual truths without compromising biblical authority.
-[/WHAT_MIGHT_SEEM_STRANGE]
+---
 
-[KEY_INSIGHTS]
-Point out 2-3 meaningful spiritual themes, divine patterns, or biblical truths that emerge in this chapter. Help readers recognize God's hand at work and understand what the Holy Spirit wants them to discover. Create anticipation for spiritual growth and deeper faith.
-[/KEY_INSIGHTS]
+Format to follow:
 
-[WHY_THIS_MATTERS_TODAY]
-Connect the chapter's divine wisdom to contemporary Christian life. What eternal truths, spiritual lessons, or insights about God's character can speak to believers today? Invite personal reflection on how God's Word applies to their walk with Him.
-[/WHY_THIS_MATTERS_TODAY]
+[MAIN_HEADING]  
+A short, inviting title (6–10 words) that captures the heart of the chapter. If the chapter has hard parts, use a heading that helps the reader stay hopeful and curious, like "God's Love in Tough Commands" or "Finding Grace in Ancient Laws."  
+[/MAIN_HEADING]  
 
-Use warm, reverent language that feels like a faithful pastor or Bible teacher sharing God's truth with love. Be scholarly but deeply respectful of Scripture's divine inspiration. Create genuine spiritual curiosity and hunger for God's Word through faithful exposition and biblical insight.
+[TIMELINE_INFO]  
+Just the historical date range (like: "c. 1440–1400 BCE")  
+[/TIMELINE_INFO]  
 
-Chapter: **{book} {chapter}**
+[CULTURAL_CONTEXT]  
+Describe the world and culture of that time. What were people’s lives like? What kind of society did they live in? How does this help us understand what’s happening in the chapter? Share sights, sounds, and other sensory details that bring it to life. Help us see how God was working in that time and place.  
+
+[/CULTURAL_CONTEXT]  
+
+[WHAT_MIGHT_SEEM_STRANGE]  
+Talk about anything that feels odd, harsh, or confusing to today’s readers. This might include ancient customs, laws, or violence. Gently explain why those parts are there, how they made sense in that time, and what they show us about God's patience, justice, or love. Show that even hard verses have a purpose in God’s bigger story.  
+
+[/WHAT_MIGHT_SEEM_STRANGE]  
+
+[KEY_INSIGHTS]  
+Point out 2–3 big spiritual truths or lessons that stand out in the chapter. What does this show us about God’s heart, His plan, or how He helps people? Include anything that points ahead to Jesus or the New Testament. Make the reader feel excited to know God more.  
+
+[/KEY_INSIGHTS]  
+
+[WHY_THIS_MATTERS_TODAY]  
+Connect this chapter to our lives now. How does it help us trust God more, love others better, or live faithfully? Give one or two takeaways that help believers walk with God today. End with an invitation to reflect or pray.  
+
+[/WHY_THIS_MATTERS_TODAY]  
 """
             }
         ]
@@ -61,7 +75,7 @@ Chapter: **{book} {chapter}**
         try:
             # Create streaming response WITHOUT structured output
             stream = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4.1-2025-04-14",
                 messages=messages,
                 stream=True
             )
@@ -205,7 +219,6 @@ Chapter: **{book} {chapter}**
     # Add this method to your BibleService class
 
     # Add this method to your BibleService class
-
     async def get_strongs_analysis_stream(self, book: str, chapter: int, verse: int, word: str) -> AsyncGenerator[str, None]:
         """Stream Strong's word analysis with true incremental streaming."""
         
@@ -235,16 +248,37 @@ Chapter: **{book} {chapter}**
     The phonetic pronunciation guide for this word (e.g., "ah-gap-ah'-o").
     [/PRONUNCIATION]
 
-    [LITERAL_MEANING]
-    The core, literal meaning(s) of this word in its original language, independent of any specific biblical context. Include root meanings, etymology if relevant, and fundamental definitions. This should be 2-3 sentences focusing on the word's basic semantic range.
-    [/LITERAL_MEANING]
+    [ROOT_MEANINGS]
+    Provide a comprehensive list of ALL the synonyms and root meanings for this Strong's number, formatted as a pipe-separated list. Include 8-12 different synonyms/meanings that capture the full semantic range of this word. For example: "love|affection|devotion|care|cherish|treasure|esteem|value|adore|embrace|favor|compassion". Focus on providing distinct but related meanings that show the word's richness.
+    [/ROOT_MEANINGS]
 
     [CONTEXTUAL_MEANING]
-    How this specific Strong's word is used and what it means specifically in {book} {chapter}:{verse}. Explain the particular nuance, theological significance, or contextual application in this verse. Focus on why this specific word was chosen by the biblical author in this context. This should be 2-3 sentences.
+    For this specific verse ({book} {chapter}:{verse}), provide:
+
+    **Best-fit meaning:** [Select the most appropriate synonym from your Root Meanings list above]
+
+    **Full verse text:** [Provide the complete verse text from {book} {chapter}:{verse} with the word "{word}" written in ALL CAPITALS for highlighting]
+
+    **Rewritten verse:** [Provide the same complete verse text, but replace the word "{word}" with your selected best-fit meaning in parentheses, like "LOVED (cherished)"]
+
+    **Context commentary:** [In 2-3 sentences, explain why this particular meaning fits best in this specific context and what it reveals about the passage's meaning]
     [/CONTEXTUAL_MEANING]
 
     [OTHER_USES]
-    List 7-10 other significant biblical verses where this exact Strong's number appears, showing how it was translated in each case. Format each entry as: "Reference|English Translation|Brief Context". For example: "John 3:16|loved|God's love for the world" or "1 Corinthians 13:4|love|description of love's characteristics". Include diverse examples showing the word's range of meaning and usage patterns across Scripture.
+    Provide 6-8 other significant biblical verses where this exact Strong's number appears. For each, format as:
+
+    **Reference:** [Book Chapter:Verse]
+    **Full Verse:** [Complete verse text with the translated word in CAPITALS]
+    **Sense Used:** [Brief explanation of how the word functions in this context]
+    **Best Synonym:** [Which synonym from the Root Meanings list fits best here]
+
+    Example format:
+    **Reference:** John 3:16
+    **Full Verse:** For God so LOVED the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.
+    **Sense Used:** Describes God's deep, sacrificial affection for humanity
+    **Best Synonym:** cherish
+
+    Ensure each example shows a different nuance or usage of the word across Scripture.
     [/OTHER_USES]
 
     [CULTURAL_SIGNIFICANCE]
@@ -262,7 +296,7 @@ Chapter: **{book} {chapter}**
         try:
             # Create streaming response
             stream = self.client.chat.completions.create(
-                model="gpt-4.1",
+                model="gpt-4.1-2025-04-14",
                 messages=messages,
                 stream=True
             )
@@ -276,7 +310,7 @@ Chapter: **{book} {chapter}**
                 "LanguageInfo": "",
                 "OriginalText": "",
                 "Pronunciation": "",
-                "LiteralMeaning": "",
+                "RootMeanings": "",
                 "ContextualMeaning": "",
                 "OtherUses": "",
                 "CulturalSignificance": ""
@@ -325,7 +359,7 @@ Chapter: **{book} {chapter}**
                 "LanguageInfo": final_sections.get("LanguageInfo", ""),
                 "OriginalText": final_sections.get("OriginalText", ""),
                 "Pronunciation": final_sections.get("Pronunciation", ""),
-                "LiteralMeaning": final_sections.get("LiteralMeaning", ""),
+                "RootMeanings": final_sections.get("RootMeanings", ""),
                 "ContextualMeaning": final_sections.get("ContextualMeaning", ""),
                 "OtherUses": final_sections.get("OtherUses", ""),
                 "CulturalSignificance": final_sections.get("CulturalSignificance", "")
@@ -364,7 +398,7 @@ Chapter: **{book} {chapter}**
             "LanguageInfo": r'\[LANGUAGE_INFO\]\s*(.*?)\s*(?:\[/LANGUAGE_INFO\]|$)',
             "OriginalText": r'\[ORIGINAL_TEXT\]\s*(.*?)\s*(?:\[/ORIGINAL_TEXT\]|$)',
             "Pronunciation": r'\[PRONUNCIATION\]\s*(.*?)\s*(?:\[/PRONUNCIATION\]|$)',
-            "LiteralMeaning": r'\[LITERAL_MEANING\]\s*(.*?)(?:\s*\[(?:CONTEXTUAL_MEANING|OTHER_USES|CULTURAL_SIGNIFICANCE|/LITERAL_MEANING\])|$)',
+            "RootMeanings": r'\[ROOT_MEANINGS\]\s*(.*?)(?:\s*\[(?:CONTEXTUAL_MEANING|OTHER_USES|CULTURAL_SIGNIFICANCE|/ROOT_MEANINGS\])|$)',
             "ContextualMeaning": r'\[CONTEXTUAL_MEANING\]\s*(.*?)(?:\s*\[(?:OTHER_USES|CULTURAL_SIGNIFICANCE|/CONTEXTUAL_MEANING\])|$)',
             "OtherUses": r'\[OTHER_USES\]\s*(.*?)(?:\s*\[(?:CULTURAL_SIGNIFICANCE|/OTHER_USES\])|$)',
             "CulturalSignificance": r'\[CULTURAL_SIGNIFICANCE\]\s*(.*?)(?:\s*\[/CULTURAL_SIGNIFICANCE\]|$)'

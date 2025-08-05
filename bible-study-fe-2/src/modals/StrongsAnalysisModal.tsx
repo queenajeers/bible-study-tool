@@ -6,6 +6,9 @@ import {
   AlertCircle,
   BookOpen,
   Globe,
+  Quote,
+  List,
+  Target,
 } from "lucide-react";
 import { SideModalLayout } from "./SideModalLayout";
 
@@ -14,7 +17,7 @@ type StrongsInfo = {
   LanguageInfo: string;
   OriginalText: string;
   Pronunciation: string;
-  LiteralMeaning: string;
+  RootMeanings: string;
   ContextualMeaning: string;
   OtherUses: string;
   CulturalSignificance: string;
@@ -22,9 +25,7 @@ type StrongsInfo = {
 
 type StreamingState = {
   isStreaming: boolean;
-  streamedSections: {
-    [key: string]: string;
-  };
+  streamedSections: Record<string, string>;
   parsedData: StrongsInfo | null;
   error: string | null;
   isComplete: boolean;
@@ -59,7 +60,7 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Helper function to create cache key
+  // Cache management
   const createCacheKey = (
     book: string,
     chapter: number,
@@ -69,30 +70,6 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
     return `strongs-${book}-${chapter}-${verse}-${word.toLowerCase().trim()}`;
   };
 
-  // Helper function to get cached data
-  const getCachedData = (cacheKey: string): StrongsInfo | null => {
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsedData = JSON.parse(cached);
-        // Validate that the cached data has the expected structure
-        if (
-          parsedData &&
-          typeof parsedData === "object" &&
-          parsedData.WordHeader
-        ) {
-          return parsedData as StrongsInfo;
-        }
-      }
-    } catch (error) {
-      console.warn("Failed to parse cached Strong's data:", error);
-      // Remove invalid cache entry
-      localStorage.removeItem(cacheKey);
-    }
-    return null;
-  };
-
-  // Helper function to save data to cache
   const saveToCacheWithExpiry = (
     cacheKey: string,
     data: StrongsInfo,
@@ -102,47 +79,51 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
       const cacheData = {
         data,
         timestamp: Date.now(),
-        expiry: Date.now() + expiryDays * 24 * 60 * 60 * 1000, // 7 days default
+        expiry: Date.now() + expiryDays * 24 * 60 * 60 * 1000,
       };
+
+      // Save to memory (optional, can remove if not needed)
+      (window as any).strongsCache = (window as any).strongsCache || {};
+      (window as any).strongsCache[cacheKey] = cacheData;
+
+      // Save to localStorage
       localStorage.setItem(cacheKey, JSON.stringify(cacheData));
     } catch (error) {
       console.warn("Failed to save Strong's data to cache:", error);
     }
   };
 
-  // Helper function to get cached data with expiry check
   const getCachedDataWithExpiry = (cacheKey: string): StrongsInfo | null => {
     try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const cacheData = JSON.parse(cached);
+      // 1. Check in-memory cache
+      const memoryCache = (window as any).strongsCache || {};
+      const inMemory = memoryCache[cacheKey];
 
-        // Check if it's old format (direct data) or new format (with expiry)
-        if (cacheData.data && cacheData.expiry) {
-          // New format with expiry
-          if (Date.now() > cacheData.expiry) {
-            // Cache expired, remove it
-            localStorage.removeItem(cacheKey);
-            return null;
-          }
-          return cacheData.data as StrongsInfo;
-        } else if (cacheData.WordHeader) {
-          // Old format (direct data), migrate to new format
-          const strongsData = cacheData as StrongsInfo;
-          saveToCacheWithExpiry(cacheKey, strongsData);
-          return strongsData;
+      if (inMemory && Date.now() < inMemory.expiry) {
+        return inMemory.data as StrongsInfo;
+      }
+
+      // 2. Check localStorage if not found or expired in memory
+      const raw = localStorage.getItem(cacheKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.expiry && Date.now() < parsed.expiry) {
+          // Restore to memory for faster access next time
+          memoryCache[cacheKey] = parsed;
+          return parsed.data as StrongsInfo;
+        } else {
+          localStorage.removeItem(cacheKey); // Clean expired
         }
       }
     } catch (error) {
       console.warn("Failed to parse cached Strong's data:", error);
-      localStorage.removeItem(cacheKey);
     }
     return null;
   };
 
+  // Data fetching effect
   useEffect(() => {
     if (!isOpen) {
-      // Reset state when modal closes
       setStreamingState({
         isStreaming: false,
         streamedSections: {},
@@ -155,15 +136,10 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
     }
 
     const fetchStrongsAnalysis = async () => {
-      // Create a unique cache key
       const cacheKey = createCacheKey(book, chapter, verse, word);
-
-      // Try to get cached data first
       const cachedData = getCachedDataWithExpiry(cacheKey);
 
       if (cachedData) {
-        // Load from cache immediately
-        console.log("Loading Strong's analysis from cache:", cacheKey);
         setStreamingState({
           isStreaming: false,
           streamedSections: {},
@@ -175,10 +151,6 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
         return;
       }
 
-      // No cache found, fetch from API
-      console.log("Fetching Strong's analysis from API:", cacheKey);
-
-      // Start streaming
       setStreamingState((prev) => ({
         ...prev,
         isStreaming: true,
@@ -190,16 +162,13 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
       }));
 
       try {
-        // Create abort controller for this request
         abortControllerRef.current = new AbortController();
 
         const response = await fetch(
           `http://127.0.0.1:8000/api/v1/strongs-analysis/${book}/${chapter}/${verse}/${encodeURIComponent(
             word
           )}`,
-          {
-            signal: abortControllerRef.current.signal,
-          }
+          { signal: abortControllerRef.current.signal }
         );
 
         if (!response.ok) {
@@ -216,43 +185,33 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
 
         while (true) {
           const { done, value } = await reader.read();
-
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-
-          // Process complete lines
           const lines = buffer.split("\n");
-          buffer = lines.pop() || ""; // Keep incomplete line in buffer
+          buffer = lines.pop() || "";
 
           for (const line of lines) {
             if (line.trim() === "") continue;
 
-            // Remove "data: " prefix if present
             const cleanLine = line.startsWith("data: ") ? line.slice(6) : line;
 
             try {
               const parsed = JSON.parse(cleanLine);
 
               if (parsed.type === "section_update") {
-                // Update sections incrementally
-                const sectionKey = parsed.section;
-
                 setStreamingState((prev) => ({
                   ...prev,
                   streamedSections: {
                     ...prev.streamedSections,
-                    [sectionKey]:
-                      (prev.streamedSections[sectionKey] || "") +
+                    [parsed.section]:
+                      (prev.streamedSections[parsed.section] || "") +
                       parsed.content,
                   },
                 }));
               } else if (parsed.type === "complete") {
-                // Final structured data received
                 const strongsData: StrongsInfo = parsed.data;
-
-                // Cache the data with expiry
-                saveToCacheWithExpiry(cacheKey, strongsData, 7); // Cache for 7 days
+                saveToCacheWithExpiry(cacheKey, strongsData, 7);
 
                 setStreamingState((prev) => ({
                   ...prev,
@@ -266,7 +225,6 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
                 throw new Error(parsed.message || "Stream error");
               }
             } catch (parseError) {
-              // Only log parse errors for debugging, don't stop the stream
               if (cleanLine.trim()) {
                 console.warn("Failed to parse line:", cleanLine, parseError);
               }
@@ -276,12 +234,8 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
 
         reader.releaseLock();
       } catch (error: any) {
-        if (error.name === "AbortError") {
-          console.log("Request was aborted");
-          return;
-        }
+        if (error.name === "AbortError") return;
 
-        console.error("Streaming error:", error);
         setStreamingState((prev) => ({
           ...prev,
           isStreaming: false,
@@ -299,19 +253,18 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
     };
   }, [isOpen, book, chapter, verse, word]);
 
-  // Get current data to display (streaming or final)
-  const getCurrentData = () => {
+  // Data parsing functions
+  const getCurrentData = (): StrongsInfo => {
     if (streamingState.parsedData) {
       return streamingState.parsedData;
     }
 
-    // Build data from streaming sections
     return {
       WordHeader: streamingState.streamedSections.WordHeader || "",
       LanguageInfo: streamingState.streamedSections.LanguageInfo || "",
       OriginalText: streamingState.streamedSections.OriginalText || "",
       Pronunciation: streamingState.streamedSections.Pronunciation || "",
-      LiteralMeaning: streamingState.streamedSections.LiteralMeaning || "",
+      RootMeanings: streamingState.streamedSections.RootMeanings || "",
       ContextualMeaning:
         streamingState.streamedSections.ContextualMeaning || "",
       OtherUses: streamingState.streamedSections.OtherUses || "",
@@ -320,70 +273,141 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
     };
   };
 
-  const currentData = getCurrentData();
-
   const parseWordHeader = (wordHeader: string) => {
     if (!wordHeader) return { parsedWord: "", strongsNum: "" };
     const parts = wordHeader.split("|");
     return {
-      parsedWord: parts[0] || "",
-      strongsNum: parts[1] || "",
+      parsedWord: parts[0]?.trim() || "",
+      strongsNum: parts[1]?.trim() || "",
     };
   };
 
-  const { parsedWord, strongsNum } = parseWordHeader(currentData.WordHeader);
+  const parseRootMeanings = (rootMeanings: string): string[] => {
+    if (!rootMeanings) return [];
+    return rootMeanings
+      .split("|")
+      .map((meaning) => meaning.trim())
+      .filter((meaning) => meaning.length > 0);
+  };
 
-  // Parse other uses
+  const parseContextualMeaning = (contextualMeaning: string) => {
+    if (!contextualMeaning) {
+      return {
+        bestFit: "",
+        fullVerseText: "",
+        rewrittenVerse: "",
+        contextCommentary: "",
+      };
+    }
+
+    // More robust parsing with fallbacks
+    const bestFitMatch = contextualMeaning.match(
+      /\*\*Best-fit meaning:\*\*\s*(.+?)(?:\n\*\*|\n\n|\*\*|$)/s
+    );
+    const fullVerseMatch = contextualMeaning.match(
+      /\*\*Full verse text:\*\*\s*(.+?)(?:\n\*\*|\n\n|\*\*|$)/s
+    );
+    const rewrittenMatch = contextualMeaning.match(
+      /\*\*Rewritten verse:\*\*\s*(.+?)(?:\n\*\*|\n\n|\*\*|$)/s
+    );
+    const commentaryMatch = contextualMeaning.match(
+      /\*\*Context commentary:\*\*\s*(.+?)(?:\n\*\*|\n\n|$)/s
+    );
+
+    return {
+      bestFit: bestFitMatch?.[1]?.trim() || "",
+      fullVerseText: fullVerseMatch?.[1]?.trim() || "",
+      rewrittenVerse: rewrittenMatch?.[1]?.trim() || "",
+      contextCommentary: commentaryMatch?.[1]?.trim() || "",
+    };
+  };
+
   const parseOtherUses = (otherUses: string) => {
     if (!otherUses) return [];
 
-    return otherUses
-      .split("\n")
-      .filter((line) => line.trim() && line.includes("|"))
-      .slice(0, 10) // Limit to 10 entries
-      .map((line) => {
-        const parts = line.trim().split("|");
+    // Split by **Reference:** but keep the content
+    const sections = otherUses.split(/(?=\*\*Reference:\*\*)/);
+
+    return sections
+      .filter((section) => section.trim().length > 0)
+      .map((section) => {
+        const referenceMatch = section.match(
+          /\*\*Reference:\*\*\s*(.+?)(?:\n|\*\*|$)/
+        );
+        const verseMatch = section.match(
+          /\*\*Full Verse:\*\*\s*(.+?)(?:\n\*\*|\*\*|$)/s
+        );
+        const senseMatch = section.match(
+          /\*\*Sense Used:\*\*\s*(.+?)(?:\n\*\*|\*\*|$)/s
+        );
+        const synonymMatch = section.match(
+          /\*\*Best Synonym:\*\*\s*(.+?)(?:\n\*\*|\*\*|$)/s
+        );
+
         return {
-          reference: parts[0] || "",
-          translation: parts[1] || "",
-          context: parts[2] || "",
+          reference: referenceMatch?.[1]?.trim() || "",
+          fullVerse: verseMatch?.[1]?.trim() || "",
+          senseUsed: senseMatch?.[1]?.trim() || "",
+          bestSynonym: synonymMatch?.[1]?.trim() || "",
         };
-      });
+      })
+      .filter((item) => item.reference.length > 0)
+      .slice(0, 8);
   };
 
+  // Component to highlight capitalized words in verses
+  const HighlightedVerse: React.FC<{ text: string; className?: string }> = ({
+    text,
+    className = "",
+  }) => {
+    if (!text) return null;
+
+    const parts = text.split(/(\b[A-Z]{2,}\b)/g);
+
+    return (
+      <div className={`leading-relaxed ${className}`}>
+        {parts.map((part, index) => {
+          const isHighlighted = /^[A-Z]{2,}$/.test(part.trim());
+          return (
+            <span
+              key={index}
+              className={
+                isHighlighted
+                  ? "bg-yellow-200 text-yellow-900 px-1 py-0.5 rounded font-bold"
+                  : ""
+              }
+            >
+              {part}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const currentData = getCurrentData();
+  const { parsedWord, strongsNum } = parseWordHeader(currentData.WordHeader);
+  const rootMeaningsList = parseRootMeanings(currentData.RootMeanings);
+  const contextualData = parseContextualMeaning(currentData.ContextualMeaning);
   const otherUsesData = parseOtherUses(currentData.OtherUses);
 
   return (
     <>
       <style>{`
         @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
-
-        .fade-in-up {
-          animation: fadeInUp 0.6s ease-out forwards;
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
         }
-
-        .fade-in {
-          animation: fadeIn 0.4s ease-out forwards;
-        }
-
+        .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         .streaming-cursor {
           display: inline-block;
           width: 2px;
@@ -393,29 +417,13 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
           margin-left: 2px;
           vertical-align: text-bottom;
         }
-
-        @keyframes blink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
-        }
-
         .content-section {
           opacity: 0;
           transform: translateY(15px);
         }
-
         .content-section.visible {
           animation: fadeInUp 0.5s ease-out forwards;
         }
-
-        .highlight-word {
-          background-color: #fef3c7;
-          color: #92400e;
-          padding: 1px 3px;
-          border-radius: 3px;
-          font-weight: 500;
-        }
-
         .cache-indicator {
           background-color: #dcfce7;
           color: #166534;
@@ -456,7 +464,7 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {/* Loading state */}
             {streamingState.isStreaming && !currentData.WordHeader && (
               <div className="flex flex-col items-center justify-center py-12 space-y-4 fade-in">
@@ -473,7 +481,7 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
                 <div className="text-center space-y-2">
                   <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
                   <p className="text-red-500 text-sm">
-                    Error loading analysis: {streamingState.error}
+                    Error: {streamingState.error}
                   </p>
                 </div>
               </div>
@@ -481,9 +489,9 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
 
             {/* Content */}
             {currentData.WordHeader && (
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {/* Word Header Section */}
-                <div className="content-section visible bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
+                <div className="content-section visible bg-gray-50 rounded-lg p-6">
                   <div className="text-center space-y-3">
                     <h1 className="text-3xl font-bold text-gray-900">
                       {parsedWord || word}
@@ -513,13 +521,13 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
 
                 {/* Original Text & Pronunciation */}
                 {(currentData.OriginalText || currentData.Pronunciation) && (
-                  <div className="content-section visible grid md:grid-cols-2 gap-6">
+                  <div className="content-section visible grid md:grid-cols-2 gap-4">
                     {currentData.OriginalText && (
-                      <div className="bg-gray-50 rounded-lg p-5">
-                        <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
                           Original Text
                         </h3>
-                        <div className="text-2xl font-bold text-gray-900 text-center py-4">
+                        <div className="text-2xl font-bold text-gray-900 text-center py-2">
                           {currentData.OriginalText}
                           {streamingState.isStreaming &&
                             !currentData.Pronunciation && (
@@ -528,16 +536,15 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
                         </div>
                       </div>
                     )}
-
                     {currentData.Pronunciation && (
-                      <div className="bg-gray-50 rounded-lg p-5">
-                        <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
                           Pronunciation
                         </h3>
-                        <div className="text-xl text-gray-800 text-center py-4 font-mono">
+                        <div className="text-xl text-gray-800 text-center py-2 font-mono">
                           {currentData.Pronunciation}
                           {streamingState.isStreaming &&
-                            !currentData.LiteralMeaning && (
+                            !currentData.RootMeanings && (
                               <span className="streaming-cursor" />
                             )}
                         </div>
@@ -546,69 +553,160 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
                   </div>
                 )}
 
-                {/* Literal Meaning */}
-                {currentData.LiteralMeaning && (
+                {/* Root Meanings Section */}
+                {rootMeaningsList.length > 0 && (
                   <div className="content-section visible">
-                    <div className="border-l-4 border-green-500 pl-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        Literal Meaning
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed">
-                        {currentData.LiteralMeaning}
-                        {streamingState.isStreaming &&
-                          !currentData.ContextualMeaning && (
-                            <span className="streaming-cursor" />
-                          )}
-                      </p>
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <List className="w-5 h-5 text-green-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Root Meanings
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {rootMeaningsList.map((meaning, index) => (
+                          <div
+                            key={index}
+                            className="bg-green-50 border border-green-200 rounded px-3 py-2 text-sm text-green-800 font-medium"
+                          >
+                            {meaning}
+                          </div>
+                        ))}
+                      </div>
+                      {streamingState.isStreaming &&
+                        !currentData.ContextualMeaning && (
+                          <span className="streaming-cursor" />
+                        )}
                     </div>
                   </div>
                 )}
 
-                {/* Contextual Meaning */}
-                {currentData.ContextualMeaning && (
+                {/* Contextual Meaning Section */}
+                {(contextualData.bestFit || contextualData.fullVerseText) && (
                   <div className="content-section visible">
-                    <div className="border-l-4 border-purple-500 pl-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        Meaning in This Context
-                      </h3>
-                      <p className="text-gray-700 leading-relaxed">
-                        {currentData.ContextualMeaning}
-                        {streamingState.isStreaming &&
-                          !currentData.OtherUses && (
-                            <span className="streaming-cursor" />
-                          )}
-                      </p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <Target className="w-5 h-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Meaning in This Context
+                        </h3>
+                      </div>
+
+                      <div className="space-y-4">
+                        {/* Best-fit meaning */}
+                        {contextualData.bestFit && (
+                          <div>
+                            <span className="text-sm font-semibold text-blue-700 block mb-1">
+                              Best-fit meaning:
+                            </span>
+                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded text-sm font-medium">
+                              {contextualData.bestFit}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Full verse with highlighted word */}
+                        {contextualData.fullVerseText && (
+                          <div>
+                            <span className="text-sm font-semibold text-blue-700 block mb-2">
+                              {book} {chapter}:{verse} (with highlighted word):
+                            </span>
+                            <div className="bg-white border border-blue-200 rounded p-4">
+                              <HighlightedVerse
+                                text={contextualData.fullVerseText}
+                                className="text-gray-800"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Rewritten verse */}
+                        {contextualData.rewrittenVerse && (
+                          <div>
+                            <span className="text-sm font-semibold text-blue-700 block mb-2">
+                              Verse with contextual meaning:
+                            </span>
+                            <div className="bg-blue-25 border border-blue-300 rounded p-4 italic">
+                              <div className="text-gray-800 leading-relaxed">
+                                {contextualData.rewrittenVerse}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Context commentary */}
+                        {contextualData.contextCommentary && (
+                          <div>
+                            <span className="text-sm font-semibold text-blue-700 block mb-2">
+                              Why this meaning fits:
+                            </span>
+                            <div className="bg-white border border-blue-200 rounded p-3">
+                              <p className="text-sm text-gray-700 leading-relaxed">
+                                {contextualData.contextCommentary}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {streamingState.isStreaming && !currentData.OtherUses && (
+                        <span className="streaming-cursor" />
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* Other Uses */}
+                {/* Other Biblical Uses Section */}
                 {otherUsesData.length > 0 && (
                   <div className="content-section visible">
-                    <div className="border-l-4 border-orange-500 pl-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                        Other Biblical Uses
-                      </h3>
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <BookOpen className="w-5 h-5 text-orange-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Other Biblical Uses
+                        </h3>
+                      </div>
+
                       <div className="space-y-4">
                         {otherUsesData.map((use, index) => (
                           <div
                             key={index}
-                            className="bg-orange-50 rounded-lg p-4"
+                            className="bg-orange-50 border border-orange-200 rounded-lg p-4"
                           >
-                            <div className="flex items-start justify-between mb-2">
-                              <span className="font-semibold text-orange-800">
+                            <div className="flex items-start justify-between mb-3">
+                              <span className="font-semibold text-orange-800 text-sm">
                                 {use.reference}
                               </span>
-                              <span className="highlight-word text-sm">
-                                "{use.translation}"
-                              </span>
+                              {use.bestSynonym && (
+                                <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-medium">
+                                  {use.bestSynonym}
+                                </span>
+                              )}
                             </div>
-                            <p className="text-gray-700 text-sm leading-relaxed">
-                              {use.context}
-                            </p>
+
+                            {use.fullVerse && (
+                              <div className="mb-3">
+                                <div className="bg-white border border-orange-200 rounded p-3">
+                                  <HighlightedVerse
+                                    text={use.fullVerse}
+                                    className="text-gray-800 text-sm"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {use.senseUsed && (
+                              <p className="text-xs text-gray-600 leading-relaxed">
+                                <span className="font-medium">
+                                  Usage context:
+                                </span>{" "}
+                                {use.senseUsed}
+                              </p>
+                            )}
                           </div>
                         ))}
                       </div>
+
                       {streamingState.isStreaming &&
                         !currentData.CulturalSignificance && (
                           <span className="streaming-cursor" />
@@ -617,14 +715,16 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
                   </div>
                 )}
 
-                {/* Cultural Significance */}
+                {/* Cultural Significance Section */}
                 {currentData.CulturalSignificance && (
                   <div className="content-section visible">
-                    <div className="border-l-4 border-indigo-500 pl-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center space-x-2">
-                        <BookOpen className="w-5 h-5" />
-                        <span>Cultural Significance</span>
-                      </h3>
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Globe className="w-5 h-5 text-indigo-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Cultural Significance
+                        </h3>
+                      </div>
                       <p className="text-gray-700 leading-relaxed">
                         {currentData.CulturalSignificance}
                         {streamingState.isStreaming &&
@@ -638,33 +738,28 @@ export const StrongsAnalysisModal: React.FC<StrongsAnalysisModalProps> = ({
 
                 {/* Completion Message */}
                 {streamingState.isComplete && streamingState.parsedData && (
-                  <div className="mt-8 pt-6 border-t border-gray-200 fade-in-up">
+                  <div className="mt-6 fade-in-up">
                     <div
                       className={`rounded-lg p-4 ${
                         streamingState.isFromCache
-                          ? "bg-gradient-to-r from-green-50 to-emerald-50"
-                          : "bg-gradient-to-r from-blue-50 to-indigo-50"
+                          ? "bg-green-50 border border-green-200"
+                          : "bg-blue-50 border border-blue-200"
                       }`}
                     >
                       <p className="text-sm text-gray-700 font-medium text-center">
                         {streamingState.isFromCache
                           ? "Loaded from cache: "
-                          : "Word study complete for "}
+                          : "Analysis complete for "}
                         <span
                           className={`font-semibold ${
                             streamingState.isFromCache
-                              ? "text-emerald-700"
-                              : "text-indigo-700"
+                              ? "text-green-700"
+                              : "text-blue-700"
                           }`}
                         >
                           "{parsedWord || word}" ({strongsNum})
                         </span>{" "}
                         in {book} {chapter}:{verse}
-                        {streamingState.isFromCache && (
-                          <span className="block text-xs text-gray-500 mt-1">
-                            Data cached for faster loading
-                          </span>
-                        )}
                       </p>
                     </div>
                   </div>
