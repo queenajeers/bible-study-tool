@@ -1,7 +1,7 @@
 // pages/BibleView.tsx
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { MessageCircle } from "lucide-react";
+
 import ChatInterface from "../components/ChatInterface";
 import ReadHeader from "../components/ReadHeader";
 import BibleChapter from "../components/BibleChapter";

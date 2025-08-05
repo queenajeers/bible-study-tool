@@ -221,7 +221,7 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
   const [notePanelPosition, setNotePanelPosition] = useState<{
     x: number;
     y: number;
-    positionMode?: "sidebar" | "overlay";
+    positionMode?: "sidebar" | "overlay" | undefined;
   } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
