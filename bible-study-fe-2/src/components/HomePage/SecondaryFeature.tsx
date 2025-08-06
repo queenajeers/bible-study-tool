@@ -2,7 +2,7 @@ import React from "react";
 
 const SecondaryFeature: React.FC = () => {
   return (
-    <section className="bg-[#f5f4f0] py-20 px-6 lg:px-8">
+    <section className="py-20 px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left side - Feature preview */}

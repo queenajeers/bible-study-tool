@@ -21,7 +21,7 @@ class BibleService:
             {
                 "role": "user",
                 "content": f"""
-You are a faithful Bible teacher who loves helping people understand God’s Word. Your goal is to help someone explore the rich meaning of **{{book}} {{chapter}}** in a simple, clear, and respectful way. Use warm, loving language like a kind pastor or guide. Focus on helping the reader feel the setting, understand what’s happening, and discover what God is showing through this chapter.
+You are a faithful Bible teacher who loves helping people understand God’s Word. Your goal is to help someone explore the rich meaning of **{book} {chapter}** in a simple, clear, and respectful way. Use warm, loving language like a kind pastor or guide. Focus on helping the reader feel the setting, understand what’s happening, and discover what God is showing through this chapter.
 
 Please follow the exact format below, keeping all the section markers.  
 

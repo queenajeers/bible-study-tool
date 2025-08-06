@@ -11,7 +11,7 @@ const NavbarHome: React.FC<NavbarProps> = ({
   setMobileMenuOpen,
 }) => {
   return (
-    <nav className="bg-[#f5f4f0] border-b border-gray-200">
+    <nav className="border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}

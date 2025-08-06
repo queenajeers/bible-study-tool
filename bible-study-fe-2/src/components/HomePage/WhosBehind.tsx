@@ -2,7 +2,7 @@ import React from "react";
 
 const WhosBehind: React.FC = () => {
   return (
-    <section className="bg-[#f5f4f0] py-16 lg:py-24 px-6 lg:px-8">
+    <section className="py-16 lg:py-24 px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-start">
           {/* Left Column - Question */}

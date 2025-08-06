@@ -12,35 +12,31 @@ const BiblicalTimeline: React.FC = () => {
     {
       title: "Garden of Eden",
       description: "Humanity's dawn.",
-      quote:
-        "Reflect on the deeper symbolism of Eden and its impact on later theology.",
+      quote: "Discover the meaning behind our beginning.",
       url: "/HomePageIcons/biblical_creation_light_sky_land_plants.png",
     },
     {
       title: "The Fall",
       description: "Sin enters.",
-      quote:
-        "Consider how the narrative of the Fall shapes our understanding of human nature.",
+      quote: "Look deeper into how everything changed.",
       url: "/HomePageIcons/depict_biblical_tree_of_knowledge_of_evil.png",
     },
     {
       title: "Noah's Ark",
       description: "Renewal after flood.",
-      quote:
-        "Explore the parallels between Noah's covenant and other ancient flood stories.",
+      quote: "Find new insight in a story of rescue and renewal.",
       url: "/HomePageIcons/bible_illustration_of_noah_s_ark_on.png",
     },
     {
-      title: "Moses & Exodus",
-      description: "Israel freed.",
-      quote:
-        "Examine the Exodus as a foundation for liberation themes throughout scripture.",
+      title: "The Empty Tomb",
+      description: "Hope rises.",
+      quote: "Reflect on what the empty tomb means for faith and new life.",
       url: "/HomePageIcons/empty_tomb_with_the_stone_rolled_away.png",
     },
   ];
 
   return (
-    <section className="bg-[#f5f4f0] py-10 px-6 lg:px-8">
+    <section className="py-10 px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-normal text-gray-900 mb-4">

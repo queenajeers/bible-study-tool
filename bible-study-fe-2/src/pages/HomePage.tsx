@@ -7,20 +7,20 @@ import MainFeature from "../components/HomePage/MainFeature";
 import NavbarHome from "../components/HomePage/NavbarHome";
 import SecondaryFeature from "../components/HomePage/SecondaryFeature";
 import WhosBehind from "../components/HomePage/WhosBehind";
+import Features from "../components/HomePage/Features";
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
     <div>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-[#f1eede]">
         <NavbarHome
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
         />
         <Hero />
         <BiblicalTimeline />
-        <MainFeature />
-        <SecondaryFeature />
+        <Features />
         <WhosBehind />
         <Footer />
       </div>

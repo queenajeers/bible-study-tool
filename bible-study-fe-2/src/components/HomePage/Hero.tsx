@@ -2,7 +2,7 @@ import React from "react";
 
 const Hero: React.FC = () => {
   return (
-    <section className="bg-[#f5f4f0] py-16 px-6 lg:px-8">
+    <section className="py-16 px-6 lg:px-8">
       <div className="max-w-4xl mx-auto text-center">
         {/* New badge */}
         {/* <div className="inline-flex items-center gap-2 text-sm text-gray-600 mb-8">
@@ -13,7 +13,7 @@ const Hero: React.FC = () => {
           <span>→</span>
         </div> */}
 
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-normal text-gray-900 mb-6 leading-tight">
+        <h1 className="font-merriweather text-4xl sm:text-5xl lg:text-6xl font-normal text-gray-900 mb-6 leading-tight">
           Smarter <span className="text-blue-500">Bible Study</span> Starts{" "}
           <span className="text-purple-500">Here.</span>
         </h1>

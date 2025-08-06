@@ -12,6 +12,7 @@ import { VerseModalContent } from "../modals/VerseModalContent";
 import { ContextInfoModal } from "../modals/ContextInfoModal";
 import { StrongsInfoModal } from "../modals/StrongsInfoModal";
 import StrongsAnalysisModal from "../modals/StrongsAnalysisModal";
+import { AncientButton } from "./AncientButton";
 
 type BibleChapterProps = {
   book: string;
@@ -26,22 +27,27 @@ type HighlightData = {
 };
 
 // Configurable highlight styling variables
+
+// Configurable highlight styling variables
+// Configurable highlight styling variables
 const HIGHLIGHT_STYLES = {
-  backgroundColor: "bg-blue-200", // Main highlight background color
-  hoverBackgroundColor: "hover:bg-blue-300", // Hover background color
-  selector: ".bg-blue-200", // CSS selector for highlights (must match backgroundColor)
+  backgroundColor: "bg-orange-100", // Subtle orange highlight like Claude's selections
+  hoverBackgroundColor: "hover:bg-orange-200", // Slightly more vibrant on hover
+  selector: ".bg-orange-100", // CSS selector for highlights (must match backgroundColor)
 };
 
-// Configurable tooltip styling variables
+// Configurable tooltip styling variables - Claude's dark theme aesthetic
 const TOOLTIP_STYLES = {
-  backgroundColor: "bg-gray-900", // Black background
-  borderColor: "border-gray-700", // Dark border
-  textColor: "text-gray-200", // Light text
-  textHoverColor: "text-white", // White on hover
-  hoverBackgroundColor: "hover:bg-gray-800", // Darker hover background
-  activeBackgroundColor: "active:bg-gray-700", // Active state background
-  shadowColor: "rgba(0, 0, 0, 0.3)", // Darker shadow
-  arrowColor: "border-t-gray-900", // Arrow color to match background
+  backgroundColor: "bg-gray-800", // Dark background like Claude's dark mode
+  borderColor: "border-gray-700", // Darker border
+  textColor: "text-gray-200", // Light text for contrast
+  textHoverColor: "text-white", // Bright white on hover
+  hoverBackgroundColor: "hover:bg-gray-700", // Darker hover background
+  activeBackgroundColor: "active:bg-gray-600", // Active state background
+  shadowColor: "rgba(0, 0, 0, 0.25)", // Stronger shadow for dark theme
+  arrowColor: "border-t-gray-800", // Arrow color to match dark background
+  shadowStyle: "shadow-xl", // More prominent shadow for dark theme
+  borderRadius: "rounded-lg", // Rounded corners like Claude's components
 };
 
 // Configurable tooltip actions
@@ -849,15 +855,13 @@ const BibleChapter = ({ book, chapter, version }: BibleChapterProps) => {
             <h1 className="font-merriweather font-light text-4xl text-gray-900 leading-tight tracking-tight">
               {bookMeta.title} {chapterMeta.number}
             </h1>
-            <button
+            <AncientButton
               onClick={() => {
                 setIsContextOpen(true);
               }}
-              className="mt-3 inline-flex items-center gap-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-1.5 text-sm font-medium shadow-sm transition"
             >
-              <Info className="w-4 h-4" />
               Background & Context
-            </button>
+            </AncientButton>
           </div>
         </div>
 
